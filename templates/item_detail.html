@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ item.name }} - E-Waste Item</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+:root {
+  --primary: #38BDF8;
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981;
+  --eco-green-light: #34D399;
+  --bg-dark: #020617;
+  --bg-light: #0F172A;
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2);
+  --text-primary: #E2E8F0;
+  --text-secondary: #64748B;
+  --radius: 10px;
+  --transition: all 0.3s ease-in-out;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+header h1 {
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+nav a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+nav a:hover {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-danger {
+  background: #D32F2F;
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+  background: #c62828;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.card {
+  background: rgba(2, 6, 23, 0.7);
+  padding: 2.5rem;
+  border-radius: var(--radius);
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.item-detail {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  margin-bottom: 1rem;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-reported {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--primary);
+}
+
+.status-collected {
+  background: rgba(251, 192, 45, 0.2);
+  color: #FBC02D;
+}
+
+.status-recycled {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--eco-green);
+}
+
+.status-disposed {
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-secondary);
+}
+
+.status-in_storage {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--primary);
+}
+
+.status-sent_to_vendor {
+  background: rgba(255, 166, 46, 0.2);
+  color: #FFA62E;
+}
+
+.status-unknown {
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-secondary);
+}
+
+.photo-preview {
+  margin-top: 1rem;
+}
+
+.photo-preview img {
+  max-width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+table:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
+}
+
+thead {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+tr:hover {
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.qr-code {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(2, 6, 23, 0.7);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.qr-code:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
+}
+
+.qr-code img {
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.delete-form {
+  position: relative;
+  margin-top: 1.5rem;
+}
+
+.delete-form div {
+  padding: 1rem;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.site-footer {
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  padding: 3rem 1.5rem 1rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.footer-section h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--eco-green);
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.footer-section p, .footer-section a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1.8;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-section a:hover {
+  color: var(--eco-green);
+}
+
+.footer-links {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-links a {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.social-links a:hover {
+  color: var(--eco-green);
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .qr-code, table {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.card:nth-child(1), .qr-code { animation-delay: 0.1s; }
+.card:nth-child(2) { animation-delay: 0.2s; }
+.qr-code + .card { animation-delay: 0.3s; }
+
+@media (max-width: 1024px) {
+  .item-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .header-container {
+    flex-wrap: wrap;
+    gap: 1rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 2rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-container {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+
+  <header>
+    <div class="container header-container">
+      <h1><i class="fas fa-box"></i> {{ item.name }}</h1>
+      <nav><a href="/items/"><i class="fas fa-arrow-left"></i> Back to Items</a></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="item-detail">
+      <div>
+        <section class="card">
+          <h3><i class="fas fa-info-circle"></i> Item Details</h3>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Name</div>
+              <div class="info-value">{{ item.name }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">ID</div>
+              <div class="info-value">#{{ item.id }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Status</div>
+              <div class="info-value status-badge status-{{ item.status.lower() if item.status else 'unknown' }}">{{ item.status }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Department</div>
+              <div class="info-value">{{ department.name if department else '-' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Category</div>
+              <div class="info-value">{{ category.name if category else '-' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Serial Number</div>
+              <div class="info-value">{{ item.serial_number or '-' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Purchase Date</div>
+              <div class="info-value">{{ item.purchase_date or '-' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Reported Date</div>
+              <div class="info-value">{{ item.reported_date.strftime('%Y-%m-%d %H:%M') if item.reported_date else 'N/A' }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Weight</div>
+              <div class="info-value">{{ item.weight_kg or '0' }} kg</div>
+            </div>
+
+            {% if item.disposition_type %}
+            <div class="info-item">
+              <div class="info-label">Disposition</div>
+              <div class="info-value">
+                {% if item.disposition_type == 'selling' %}
+                  <span style="color: var(--eco-green); font-weight: 600;">🛒 Selling</span>
+                  {% if item.price %}
+                    - Rs{{ "%.2f"|format(item.price) }}
+                  {% endif %}
+                {% elif item.disposition_type == 'disposed' %}
+                  <span style="color: #D32F2F; font-weight: 600;">🗑️ Disposed</span>
+                {% else %}
+                  {{ item.disposition_type|title }}
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if item.notes %}
+          <div class="info-item" style="margin-top: 1.5rem;">
+            <div class="info-label">Notes</div>
+            <div class="info-value">{{ item.notes }}</div>
+          </div>
+          {% endif %}
+
+          {% if item.photo_path %}
+          <div class="info-item photo-preview">
+            <div class="info-label">Photo</div>
+            <img src="{{ item.photo_path }}" alt="Item photo" />
+          </div>
+          {% endif %}
+        </section>
+
+        <section class="card">
+          <h3><i class="fas fa-history"></i> Status History</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Changed By</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if logs %}
+              {% for log in logs %}
+              <tr>
+                <td>{{ log.changed_at.strftime('%Y-%m-%d %H:%M') if log.changed_at else 'N/A' }}</td>
+                <td>
+                  <span class="status-badge status-{{ log.from_status.lower() if log.from_status else 'unknown' }}">
+                    {{ log.from_status or '-' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge status-{{ log.to_status.lower() if log.to_status else 'unknown' }}">
+                    {{ log.to_status }}
+                  </span>
+                </td>
+                <td>
+                  {% if log.user_type == 'vendor' %}
+                    <span style="color: var(--text-secondary); font-weight: 600;">
+                      <i class="fas fa-store"></i> Vendor
+                    </span>
+                  {% else %}
+                    <span style="color: var(--primary); font-weight: 600;">
+                      <i class="fas fa-user"></i> User
+                    </span>
+                  {% endif %}
+                </td>
+                <td>{{ log.remarks or '-' }}</td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-secondary);">No status history available</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <div class="side-panel">
+        <section class="card">
+          <h3><i class="fas fa-qrcode"></i> Quick Actions</h3>
+
+          <div class="qr-code">
+            <img src="/items/{{ item.id }}/qr.png" alt="QR Code" width="160" height="160" />
+            <div style="margin-top: 1rem;">
+              <a class="btn btn-primary" href="/items/{{ item.id }}/download.pdf">
+                <i class="fas fa-download"></i> Download PDF
+              </a>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <div class="info-label">Direct Link</div>
+            <div style="font-size: 0.9rem; word-break: break-all; margin-top: 0.5rem;">
+              <a href="{{ item_url }}" target="_blank">{{ item_url }}</a>
+            </div>
+          </div>
+
+          {% if current_user and (item.reported_by_id == current_user.id or item.reported_by_id == current_user.id|string) %}
+            <form class="delete-form" onsubmit="return handleDelete(event, '{{ item.id }}')" style="margin-top: 1.5rem; position: relative;">
+              <button class="btn btn-danger" type="submit">
+                <i class="fas fa-trash"></i> Delete Item
+              </button>
+            </form>
+          {% else %}
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(56, 189, 248, 0.1); border-radius: var(--radius); text-align: center; color: var(--text-secondary);">
+              <i class="fas fa-info-circle"></i> You can only delete your own items
+            </div>
+          {% endif %}
+        </section>
+
+        <section class="card">
+          <h3><i class="fas fa-info-circle"></i> Status Management</h3>
+          <div style="padding: 1rem; background: rgba(56, 189, 248, 0.1); border-radius: var(--radius); text-align: center; color: var(--text-secondary);">
+            <i class="fas fa-info-circle"></i> Status updates are managed by vendors during pickup process
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+            <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links">
+            <li><i class="fas fa-envelope"></i> aunkurkumarsaha@gmail.com</li>
+            <li><i class="fas fa-phone"></i> +91 8420280792</li>
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      let particlesArray = [];
+
+      const colors = [
+        'rgba(56, 189, 248, 0.5)',
+        'rgba(16, 185, 129, 0.5)',
+        'rgba(96, 165, 250, 0.5)',
+        'rgba(52, 211, 153, 0.5)'
+      ];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2.5 + 0.5;
+          this.speedX = Math.random() * 1 - 0.5;
+          this.speedY = Math.random() * 1 - 0.5;
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          
+          if (this.x > canvas.width || this.x < 0) {
+            this.speedX = -this.speedX;
+          }
+          if (this.y > canvas.height || this.y < 0) {
+            this.speedY = -this.speedY;
+          }
+        }
+        
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        particlesArray = [];
+        const numberOfParticles = (canvas.height * canvas.width) / 9000;
+        
+        for (let i = 0; i < numberOfParticles; i++) {
+          particlesArray.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particlesArray.length; i++) {
+          particlesArray[i].update();
+          particlesArray[i].draw();
+          
+          for (let j = i; j < particlesArray.length; j++) {
+            const dx = particlesArray[i].x - particlesArray[j].x;
+            const dy = particlesArray[i].y - particlesArray[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+              ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      }
+      
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        init();
+      });
+
+      init();
+      animate();
+
+      function handleDelete(event, itemId) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to delete this item?')) {
+          fetch(`/items/${itemId}/delete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              window.location.href = '/items/';
+            } else {
+              alert('Error deleting item: ' + data.error);
+            }
+          })
+          .catch(error => {
+            alert('Error deleting item: ' + error.message);
+          });
+        }
+        return false;
+      }
+    });
+  </script>
+</body>
+</html>

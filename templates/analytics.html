@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-Waste Analytics Dashboard - TrashFormer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+      --primary-dark: #1E88E5;
+      --eco-green: #10B981; /* New eco-friendly green color */
+      --eco-green-light: #34D399; /* Lighter green variant */
+      --bg-dark: #020617; /* Even darker, more neutral background */
+      --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+      --card-bg: #0F172A;
+      --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+      --text-primary: #E2E8F0; /* Slightly softer white */
+      --text-secondary: #64748B; /* Softer gray */
+      --radius: 10px; /* Slightly larger radius */
+      --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* Header */
+    header {
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(10deg) scale(1.1);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Navigation */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+        color: var(--text-primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid var(--border-color);
+    }
+
+    .profile-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px var(--primary-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+      flex: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Stats Overview */
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 2.5rem 2rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      transition: var(--transition);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+    }
+
+    .stat-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: var(--primary);
+      font-size: 1.75rem;
+      transition: var(--transition);
+    }
+
+    .stat-card:nth-child(2) .stat-icon {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--eco-green);
+    }
+
+    .stat-card:nth-child(3) .stat-icon {
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--eco-green-light);
+    }
+
+    .stat-card:nth-child(4) .stat-icon {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3B82F6;
+    }
+
+    .stat-card:hover .stat-icon {
+      transform: scale(1.1) rotate(5deg);
+      background: var(--primary);
+      color: var(--bg-dark);
+      box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+    }
+
+    .stat-card:nth-child(2):hover .stat-icon {
+      background: var(--eco-green);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .stat-card:nth-child(3):hover .stat-icon {
+      background: var(--eco-green-light);
+      box-shadow: 0 8px 25px rgba(52, 211, 153, 0.4);
+    }
+
+    .stat-card:nth-child(4):hover .stat-icon {
+      background: #3B82F6;
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .stat-value {
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+
+    /* Filter Section */
+    .filter-section {
+      background: var(--card-bg);
+      padding: 1.5rem 2rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      transition: var(--transition);
+    }
+
+    .filter-section:hover {
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .filter-label {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .filter-select {
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background: rgba(2, 6, 23, 0.3);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      transition: var(--transition);
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    /* Impact Section */
+    .impact-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .impact-card {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: var(--transition);
+    }
+
+    .impact-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .impact-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.5rem;
+      transition: var(--transition);
+    }
+
+    .impact-card:hover .impact-icon {
+      background: var(--primary);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .impact-content h4 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .impact-content p {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card, .stat-card, .filter-section {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .delay-1 {
+      animation-delay: 0.2s;
+    }
+
+    .delay-2 {
+      animation-delay: 0.4s;
+    }
+
+    .delay-3 {
+      animation-delay: 0.6s;
+    }
+
+    .delay-4 {
+      animation-delay: 0.8s;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+      
+      .filter-section {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .stats-overview {
+        grid-template-columns: 1fr;
+      }
+      
+      .impact-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-dark);
+      color: var(--text-secondary);
+      padding: 3rem 1.5rem 1rem;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+
+    .footer-section h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--eco-green);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p, .footer-section a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--eco-green);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      color: var(--eco-green);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+        <a href="/items/" class="nav-link"><i class="fas fa-laptop"></i> Items</a>
+        {% if user_type == 'vendor' %}
+        <a href="/auth/dashboard/vendor_dashboard" class="nav-link">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        {% else %}
+        <a href="/auth/dashboard/user_dashboard" class="nav-link">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        {% endif %}
+        <a href="/analytics/" class="nav-link active"><i class="fas fa-chart-line"></i> Analytics</a>
+      </nav>
+      
+      <div class="user-actions">
+        {% if current_user %}
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          {{ (current_user.full_name or current_user.username)[:1] | upper }}
+        </a>
+        <a href="/auth/logout" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+        {% else %}
+        <a href="/auth/login" class="btn btn-secondary">Sign In</a>
+        <a href="/auth/signup" class="btn btn-primary">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Page Header with User-Specific Content -->
+    <div class="page-header">
+      {% if user_type == 'vendor' %}
+        <h1><i class="fas fa-chart-line"></i> Vendor Analytics Dashboard</h1>
+        <p>Track your assigned e-waste items, processing efficiency, and environmental impact</p>
+      {% else %}
+        <h1><i class="fas fa-chart-line"></i> Personal Analytics Dashboard</h1>
+        <p>Monitor your e-waste reporting progress and environmental contribution</p>
+      {% endif %}
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      {% if user_type == 'vendor' %}
+        <div class="stat-card delay-1">
+          <div class="stat-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="stat-value" id="total-items">0</div>
+          <div class="stat-label">Assigned Items</div>
+        </div>
+
+        <div class="stat-card delay-2">
+          <div class="stat-icon">
+            <i class="fas fa-recycle"></i>
+          </div>
+          <div class="stat-value" id="recycled-items">0</div>
+          <div class="stat-label">Items Processed</div>
+        </div>
+
+        <div class="stat-card delay-3">
+          <div class="stat-icon">
+            <i class="fas fa-clipboard-check"></i>
+          </div>
+          <div class="stat-value" id="reported-items">0</div>
+          <div class="stat-label">Pickup Requests</div>
+        </div>
+
+        <div class="stat-card delay-4">
+          <div class="stat-icon">
+            <i class="fas fa-trash"></i>
+          </div>
+          <div class="stat-value" id="disposed-items">0</div>
+          <div class="stat-label">Completed Items</div>
+        </div>
+      {% else %}
+        <div class="stat-card delay-1">
+          <div class="stat-icon">
+            <i class="fas fa-microchip"></i>
+          </div>
+          <div class="stat-value" id="total-items">0</div>
+          <div class="stat-label">Total Items Reported</div>
+        </div>
+
+        <div class="stat-card delay-2">
+          <div class="stat-icon">
+            <i class="fas fa-recycle"></i>
+          </div>
+          <div class="stat-value" id="recycled-items">0</div>
+          <div class="stat-label">Items Recycled</div>
+        </div>
+
+        <div class="stat-card delay-3">
+          <div class="stat-icon">
+            <i class="fas fa-flag"></i>
+          </div>
+          <div class="stat-value" id="reported-items">0</div>
+          <div class="stat-label">Items Reported</div>
+        </div>
+
+        <div class="stat-card delay-4">
+          <div class="stat-icon">
+            <i class="fas fa-trash"></i>
+          </div>
+          <div class="stat-value" id="disposed-items">0</div>
+          <div class="stat-label">Properly Disposed</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <span class="filter-label">Time Period:</span>
+      <select class="filter-select">
+        <option>Last 7 Days</option>
+        <option>Last 30 Days</option>
+        <option selected>Last 6 Months</option>
+        <option>Last Year</option>
+      </select>
+
+      <span class="filter-label">Department:</span>
+      <select class="filter-select">
+        <option>All Departments</option>
+        <option>IT</option>
+        <option>Finance</option>
+        <option>Operations</option>
+        <option>HR</option>
+      </select>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      <div class="card">
+        <h3><i class="fas fa-chart-pie"></i> Status Distribution</h3>
+        <div class="chart-container">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-layer-group"></i> Category Types</h3>
+        <div class="chart-container">
+          <canvas id="typeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vendor-specific Pickup Requests Chart -->
+    {% if user_type == 'vendor' %}
+    <div class="card">
+      <h3><i class="fas fa-clipboard-list"></i> Pickup Request Status</h3>
+      <div class="chart-container">
+        <canvas id="pickupChart"></canvas>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Monthly Trend -->
+    <div class="card">
+      <h3><i class="fas fa-chart-line"></i> 
+        {% if user_type == 'vendor' %}
+          Monthly Processing Trend
+        {% else %}
+          Monthly Reporting Trend
+        {% endif %}
+      </h3>
+      <div class="chart-container">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Impact Section -->
+    <h3 style="margin: 2rem 0 1rem; color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif;">Environmental Impact</h3>
+    <div class="impact-section">
+      <div class="impact-card">
+        <div class="impact-icon">
+          <i class="fas fa-weight-scale"></i>
+        </div>
+        <div class="impact-content">
+          <h4>Recycled Material</h4>
+          <p id="recycled-weight">0 kg</p>
+        </div>
+      </div>
+
+      <div class="impact-card">
+        <div class="impact-icon">
+          <i class="fas fa-cloud"></i>
+        </div>
+        <div class="impact-content">
+          <h4>CO₂ Emissions Saved</h4>
+          <p id="co2-saved">0 kg</p>
+        </div>
+      </div>
+
+      <div class="impact-card">
+        <div class="impact-icon">
+          <i class="fas fa-skull-crossbones"></i>
+        </div>
+        <div class="impact-content">
+          <h4>Hazardous Materials Avoided</h4>
+          <p id="hazardous-avoided">0 kg</p>
+        </div>
+      </div>
+
+      <div class="impact-card">
+        <div class="impact-icon">
+          <i class="fas fa-tree"></i>
+        </div>
+        <div class="impact-content">
+          <h4>Equivalent Trees</h4>
+          <p id="equivalent-trees">0 trees</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+        // Load analytics data
+        async function load() {
+          try {
+            const data = await fetch('/analytics/summary').then(r => r.json());
+            
+            // Update stats overview based on user type
+            document.getElementById('total-items').textContent = data.totalItems || 0;
+            document.getElementById('recycled-items').textContent = data.itemsByStatus?.recycled || 0;
+            
+            // Handle different data for vendors vs users
+            if (data.userType === 'vendor') {
+              // For vendors, show pickup requests instead of reported items
+              document.getElementById('reported-items').textContent = data.totalPickupRequests || 0;
+              document.getElementById('disposed-items').textContent = (data.itemsByStatus?.recycled || 0) + (data.itemsByStatus?.disposed || 0);
+            } else {
+              // For users, show reported items
+              document.getElementById('reported-items').textContent = data.itemsByStatus?.reported || 0;
+              document.getElementById('disposed-items').textContent = data.itemsByStatus?.disposed || 0;
+            }
+            
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusLabels = Object.keys(data.itemsByStatus || {});
+            const statusValues = Object.values(data.itemsByStatus || {});
+            const statusColors = statusLabels.map((label, i) => {
+              if (label.toLowerCase() === 'recycled') return '#10B981';
+              if (label.toLowerCase() === 'reported') return '#38BDF8';
+              if (label.toLowerCase() === 'disposed') return '#64748B';
+              return ['#1E88E5', '#34D399', '#3B82F6', '#F59E0B', '#EF4444'][i % 5];
+            });
+            
+            new Chart(statusCtx, {
+              type: 'doughnut',
+              data: {
+                labels: statusLabels,
+                datasets: [{
+                  data: statusValues,
+                  backgroundColor: statusColors,
+                  borderWidth: 0
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom'
+                  }
+                },
+                cutout: '70%'
+              }
+            });
+            
+            // Category Types Chart
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeLabels = Object.keys(data.itemsByCategoryType || {});
+            const typeValues = Object.values(data.itemsByCategoryType || {});
+            
+            new Chart(typeCtx, {
+              type: 'doughnut',
+              data: {
+                labels: typeLabels,
+                datasets: [{
+                  data: typeValues,
+                  backgroundColor: ['#38BDF8', '#10B981', '#1E88E5', '#34D399', '#3B82F6', '#F59E0B', '#EF4444'],
+                  borderWidth: 0
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom'
+                  }
+                },
+                cutout: '70%'
+              }
+            });
+            
+            // Pickup Requests Chart (Vendor only)
+            if (data.userType === 'vendor' && data.pickupRequestsByStatus) {
+              const pickupCtx = document.getElementById('pickupChart');
+              if (pickupCtx) {
+                const pickupLabels = Object.keys(data.pickupRequestsByStatus);
+                const pickupValues = Object.values(data.pickupRequestsByStatus);
+                const pickupColors = pickupLabels.map((label, i) => {
+                  if (label.toLowerCase() === 'approved') return '#10B981';
+                  if (label.toLowerCase() === 'completed') return '#38BDF8';
+                  if (label.toLowerCase() === 'pending') return '#F59E0B';
+                  if (label.toLowerCase() === 'rejected') return '#EF4444';
+                  return ['#1E88E5', '#34D399', '#3B82F6'][i % 3];
+                });
+                
+                new Chart(pickupCtx.getContext('2d'), {
+                  type: 'doughnut',
+                  data: {
+                    labels: pickupLabels,
+                    datasets: [{
+                      data: pickupValues,
+                      backgroundColor: pickupColors,
+                      borderWidth: 0
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'bottom'
+                      }
+                    },
+                    cutout: '70%'
+                  }
+                });
+              }
+            }
+            
+            // Monthly Trend Chart
+            const mCtx = document.getElementById('monthlyChart').getContext('2d');
+            const mlabels = Object.keys(data.monthlyReported || {}).sort();
+            const mvalues = mlabels.map(k => data.monthlyReported[k]);
+            
+            new Chart(mCtx, {
+              type: 'line',
+              data: {
+                labels: mlabels,
+                datasets: [{
+                  label: data.userType === 'vendor' ? 'Items Processed' : 'Items Reported',
+                  data: mvalues,
+                  backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                  borderColor: '#38BDF8',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.3
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    grid: {
+                      color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                      color: '#64748B'
+                    }
+                  },
+                  x: {
+                    grid: {
+                      display: false
+                    },
+                    ticks: {
+                      color: '#64748B'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: '#E2E8F0'
+                    }
+                  }
+                }
+              }
+            });
+            
+            // Impact Section
+            const recycledWeight = data.recycledWeightKg || 0;
+            const co2Saved = data.co2SavedKg || 0;
+            const hazardousAvoided = data.hazardousMaterialsAvoided || 0;
+            
+            // Update impact metrics with proper formatting
+            document.getElementById('recycled-weight').textContent = `${recycledWeight.toFixed(2)} kg`;
+            document.getElementById('co2-saved').textContent = `${co2Saved.toFixed(2)} kg`;
+            document.getElementById('hazardous-avoided').textContent = `${hazardousAvoided.toFixed(2)} kg`;
+            
+            // Calculate equivalent items for impact visualization
+            const equivalentTrees = Math.max(0, Math.round(co2Saved / 21.77)); // Average CO2 absorbed by a tree per year
+            document.getElementById('equivalent-trees').textContent = `${equivalentTrees} trees`;
+            
+          } catch (error) {
+            console.error('Error loading analytics data:', error);
+            
+            // Set fallback values for all metrics
+            const fallbackElements = [
+              'total-items', 'recycled-items', 'reported-items', 'disposed-items',
+              'recycled-weight', 'co2-saved', 'hazardous-avoided', 'equivalent-trees'
+            ];
+            
+            fallbackElements.forEach(id => {
+              const el = document.getElementById(id);
+              if (el) {
+                if (id.includes('weight') || id.includes('saved') || id.includes('avoided')) {
+                  el.textContent = '0.00 kg';
+                } else if (id.includes('trees')) {
+                  el.textContent = '0 trees';
+                } else {
+                  el.textContent = '0';
+                }
+              }
+            });
+            
+            // Show error message to user
+            const errorMsg = document.createElement('div');
+            errorMsg.style.cssText = `
+              background: rgba(239, 68, 68, 0.1);
+              border: 1px solid rgba(239, 68, 68, 0.3);
+              color: #EF4444;
+              padding: 1rem;
+              border-radius: var(--radius);
+              margin: 1rem 0;
+              text-align: center;
+              font-weight: 500;
+            `;
+            errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unable to load analytics data. Please refresh the page.';
+            
+            const main = document.querySelector('main');
+            if (main) {
+              main.insertBefore(errorMsg, main.firstChild);
+            }
+          }
+        }
+        
+        // Load the data
+        load();
+    });
+  </script>
+</body>
+</html>

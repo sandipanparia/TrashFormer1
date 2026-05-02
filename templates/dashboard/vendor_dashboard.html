@@ -1,0 +1,1198 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Dashboard - TrashFormer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+:root {
+  --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981; /* New eco-friendly green color */
+  --eco-green-light: #34D399; /* Lighter green variant */
+  --bg-dark: #020617; /* Even darker, more neutral background */
+  --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+  --text-primary: #E2E8F0; /* Slightly softer white */
+  --text-secondary: #64748B; /* Softer gray */
+  --radius: 10px; /* Slightly larger radius */
+  --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+/* Header */
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(10deg) scale(1.1);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-icon {
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--border-color);
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-dark);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+/* Main Content */
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Page Header */
+.page-header {
+  background-image: radial-gradient(ellipse at center, var(--bg-light) 0%, var(--bg-dark) 70%);
+  padding: 3rem 2.5rem;
+  border-radius: var(--radius);
+  margin-bottom: 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.page-header h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.page-header p {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Content Section */
+.content-section {
+  background: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: var(--radius);
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.section-header h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.75rem;
+  color: var(--text-primary);
+}
+
+.section-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* User Info */
+.user-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.user-detail {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.user-detail:hover {
+  border-color: var(--eco-green);
+}
+
+.user-detail strong {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-verified {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--eco-green);
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FACC15;
+}
+
+/* Dashboard Navigation */
+.dashboard-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-nav-link {
+  padding: 0.8rem 1.5rem;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.dashboard-nav-link:hover {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--primary);
+}
+
+.dashboard-nav-link.active {
+  background: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+
+
+.stat-card {
+  background: var(--card-bg);
+  padding: 2.5rem 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  border-color: var(--primary);
+}
+
+.stat-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  background: rgba(56, 189, 248, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: var(--primary);
+  font-size: 1.75rem;
+  transition: var(--transition);
+}
+
+.stat-card:nth-child(2) .stat-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--eco-green);
+}
+
+.stat-card:nth-child(3) .stat-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--eco-green);
+}
+
+.stat-card:nth-child(4) .stat-icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+}
+
+.stat-card:nth-child(5) .stat-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--eco-green);
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: var(--primary);
+  color: var(--bg-dark);
+  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+}
+
+.stat-card:nth-child(2):hover .stat-icon {
+  background: var(--eco-green);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.stat-card:nth-child(3):hover .stat-icon {
+  background: var(--eco-green);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.stat-card:nth-child(4):hover .stat-icon {
+  background: #3B82F6;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.stat-card:nth-child(5):hover .stat-icon {
+  background: var(--eco-green);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.stat-value {
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* Footer */
+.site-footer {
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  padding: 3rem 1.5rem 1rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.footer-section h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--eco-green);
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.footer-section p, .footer-section a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1.8;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-section a:hover {
+  color: var(--eco-green);
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-links a {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.social-links a:hover {
+  color: var(--eco-green);
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+/* Green accent elements */
+.green-accent {
+  color: var(--eco-green);
+}
+
+/* Animation Utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.delay-1 {
+  animation-delay: 0.2s;
+}
+
+.delay-2 {
+  animation-delay: 0.4s;
+}
+
+.delay-3 {
+  animation-delay: 0.6s;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-nav {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .page-header {
+    padding: 2rem 1.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .content-section {
+    padding: 1.5rem;
+  }
+  
+  .user-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-nav {
+    flex-direction: column;
+  }
+  
+
+}
+</style>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/items/" class="nav-link"><i class="fas fa-laptop"></i> Items</a>
+        <a href="/schedules/" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+        <a href="/vendors/" class="nav-link"><i class="fas fa-store"></i> Vendors</a>
+        <a href="/reports/" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="/analytics/" class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+      </nav>
+      
+      <div class="user-actions">
+        {% if current_user %}
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          {{ (current_user.full_name or current_user.username)[:1] | upper }}
+        </a>
+        <a href="/auth/logout" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+        {% else %}
+        <a href="/auth/login" class="btn btn-secondary">Sign In</a>
+        <a href="/auth/signup" class="btn btn-primary">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <section class="page-header animate">
+      <h1>Vendor Dashboard</h1>
+      <p>Manage e-waste collection, processing, and vendor operations</p>
+    </section>
+    
+    <section class="content-section animate delay-1">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h2>Account Information</h2>
+      </div>
+      
+      <div class="user-info-grid">
+        <div class="user-detail">
+          <strong>Username</strong>
+          <span>{{ user.username }}</span>
+        </div>
+        <div class="user-detail">
+          <strong>Email</strong>
+          <span>{{ user.email }}</span>
+        </div>
+        <div class="user-detail">
+          <strong>Full Name</strong>
+          <span>{{ user.full_name or 'Not provided' }}</span>
+        </div>
+        <div class="user-detail">
+          <strong>Phone</strong>
+          <span>{{ user.phone or 'Not provided' }}</span>
+        </div>
+        {% if user.vendor %}
+        <div class="user-detail">
+          <strong>Company</strong>
+          <span>{{ user.vendor.name }}</span>
+        </div>
+        <div class="user-detail">
+          <strong>Company Status</strong>
+          <span class="status-badge status-{{ 'verified' if user.vendor.is_verified else 'pending' }}">
+            {{ 'Verified' if user.vendor.is_verified else 'Pending Verification' }}
+          </span>
+        </div>
+        <div class="user-detail">
+          <strong>License</strong>
+          <span>{{ user.vendor.license_no or 'Not provided' }}</span>
+        </div>
+        {% endif %}
+        <div class="user-detail">
+          <strong>Member Since</strong>
+          <span>{{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'N/A' }}</span>
+        </div>
+      </div>
+    </section>
+    
+    <section class="content-section animate delay-1">
+      <div class="dashboard-nav">
+        <a href="/pickup/vendor/items" class="dashboard-nav-link active">
+          <i class="fas fa-box"></i> Available Items
+        </a>
+       
+        <a href="/schedules/" class="dashboard-nav-link">
+          <i class="fas fa-calendar-alt"></i> Collection Schedules
+        </a>
+       
+        <a href="/items/" class="dashboard-nav-link">
+          <i class="fas fa-recycle"></i> E-Waste Items
+        </a>
+        <a href="/reports/" class="dashboard-nav-link">
+          <i class="fas fa-chart-bar"></i> Reports
+        </a>
+        <a href="/analytics/" class="dashboard-nav-link">
+          <i class="fas fa-chart-line"></i> Analytics
+        </a>
+        <a href="/campaigns/" class="dashboard-nav-link">
+          <i class="fas fa-bullhorn"></i> Campaigns
+        </a>
+        
+      </div>
+    </section>
+    
+    <section class="content-section animate delay-2">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h2>Vendor Statistics</h2>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="stat-value">{{ items_count }}</div>
+          <div class="stat-label">Total Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-box-open"></i>
+          </div>
+          <div class="stat-value">{{ pickup_requests_count }}</div>
+          <div class="stat-label">Available Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-clipboard-list"></i>
+            </div>
+          <div class="stat-value">{{ completed_requests_count }}</div>
+          <div class="stat-label">My Requests</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-boxes-stacked"></i>
+          </div>
+          <div class="stat-value">{{ disposed_count }}</div>
+          <div class="stat-label">Collected/Storage</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-value">{{ approved_count }}</div>
+          <div class="stat-label">Approved Requests</div>
+        </div>
+              </div>
+      </section>
+      
+
+      
+    </main>
+  
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+            <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Haldia, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+        // Simple animations
+        const statCards = document.querySelectorAll('.stat-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = 1;
+              entry.target.style.transform = 'translateY(0)';
+            }
+          });
+        }, { threshold: 0.1 });
+        
+        statCards.forEach(card => {
+          card.style.opacity = 0;
+          card.style.transform = 'translateY(20px)';
+          card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          observer.observe(card);
+        });
+        
+        // Add active class to current page navigation
+        const currentPage = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === currentPage) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+        
+        // Dashboard navigation active state
+        const dashboardNavLinks = document.querySelectorAll('.dashboard-nav-link');
+        dashboardNavLinks.forEach(link => {
+          link.addEventListener('click', function() {
+            dashboardNavLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
+    });
+  </script>
+</body>
+</html>
+      </section>
+      
+      
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+        // Simple animations
+        const statCards = document.querySelectorAll('.stat-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = 1;
+              entry.target.style.transform = 'translateY(0)';
+            }
+          });
+        }, { threshold: 0.1 });
+        
+        statCards.forEach(card => {
+          card.style.opacity = 0;
+          card.style.transform = 'translateY(20px)';
+          card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          observer.observe(card);
+        });
+        
+        // Add active class to current page navigation
+        const currentPage = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === currentPage) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+        
+        // Dashboard navigation active state
+        const dashboardNavLinks = document.querySelectorAll('.dashboard-nav-link');
+        dashboardNavLinks.forEach(link => {
+          link.addEventListener('click', function() {
+            dashboardNavLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
+    });
+  </script>
+</body>
+</html>
+      </section>
+      
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+        // Simple animations
+        const statCards = document.querySelectorAll('.stat-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = 1;
+              entry.target.style.transform = 'translateY(0)';
+            }
+          });
+        }, { threshold: 0.1 });
+        
+        statCards.forEach(card => {
+          card.style.opacity = 0;
+          card.style.transform = 'translateY(20px)';
+          card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          observer.observe(card);
+        });
+        
+        // Add active class to current page navigation
+        const currentPage = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === currentPage) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+        
+        // Dashboard navigation active state
+        const dashboardNavLinks = document.querySelectorAll('.dashboard-nav-link');
+        dashboardNavLinks.forEach(link => {
+          link.addEventListener('click', function() {
+            dashboardNavLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
+    });
+  </script>
+</body>
+</html>

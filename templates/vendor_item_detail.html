@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Item Details - Vendor View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+:root {
+  --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981; /* New eco-friendly green color */
+  --eco-green-light: #34D399; /* Lighter green variant */
+  --bg-dark: #020617; /* Even darker, more neutral background */
+  --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+  --text-primary: #E2E8F0; /* Slightly softer white */
+  --text-secondary: #64748B; /* Softer gray */
+  --radius: 10px; /* Slightly larger radius */
+  --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+/* Header */
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(10deg) scale(1.1);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-icon {
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--border-color);
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-dark);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+.btn-success {
+  background-image: linear-gradient(to right, var(--eco-green) 0%, var(--eco-green-light) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-danger {
+  background: #FF6B6B;
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Main Content */
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title i {
+  color: var(--text-primary);
+  background: rgba(56, 189, 248, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendor-badge {
+  background: var(--eco-green);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 1rem;
+}
+
+/* Item Layout */
+.item-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .item-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Styles */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+.card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.card h3 i {
+  background: rgba(56, 189, 248, 0.1);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.info-value {
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.status {
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-collected {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--eco-green);
+}
+
+/* Photo Preview */
+.photo-preview {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.photo-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+/* QR Code */
+.qr-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.qr-code {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+}
+
+/* Location Section */
+.location-section {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.location-section h4 {
+  color: var(--eco-green);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.location-info {
+  background: rgba(15, 23, 42, 0.5);
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.location-info p {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.location-info strong {
+  color: var(--text-primary);
+}
+
+.map-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.map-actions .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.map-actions .btn i {
+  margin-right: 0.5rem;
+}
+
+/* Pickup Map Styles */
+.map-container-wrapper {
+  margin: 1rem 0;
+}
+
+.pickup-map {
+  width: 100%;
+  height: 300px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  background-color: var(--bg-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pickup-map.loaded {
+  background-color: transparent;
+}
+
+.map-loading {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.map-loading i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.pickup-map.loaded .map-loading {
+  display: none;
+}
+
+.map-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.map-controls .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.map-controls .btn i {
+  margin-right: 0.5rem;
+}
+
+/* Primary Tracking Section */
+.primary-tracking-section {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius);
+}
+
+.primary-tracking-section .btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
+}
+
+.primary-tracking-section .btn-large:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.tracking-info {
+  margin-top: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.btn-info {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-info:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Pickup Location Info */
+.pickup-location-info {
+  animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Route Info */
+.route-info {
+  animation: slideInUp 0.4s ease-out;
+}
+
+/* Button Sizes */
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.distance-info {
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease-in;
+  color: var(--text-secondary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pickup Request Info */
+.pickup-info {
+  background: rgba(255, 166, 46, 0.05);
+  border: 1px solid rgba(255, 166, 46, 0.2);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.pickup-info h4 {
+  color: #FFA62E;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.pickup-details {
+  background: rgba(15, 23, 42, 0.5);
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 166, 46, 0.1);
+}
+
+.pickup-details p {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.pickup-details strong {
+  color: var(--text-primary);
+}
+
+/* Alert Styles */
+.alert {
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alert-info {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: var(--primary);
+}
+
+.alert-warning {
+  background: rgba(255, 166, 46, 0.1);
+  border: 1px solid rgba(255, 166, 46, 0.2);
+  color: #FFA62E;
+}
+
+/* Form Styles */
+.update-status-form {
+  margin-top: 1.5rem;
+}
+
+.update-status-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.update-status-form select,
+.update-status-form textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(15, 23, 42, 0.5);
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.update-status-form select:focus,
+.update-status-form textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .pickup-map {
+    height: 250px;
+  }
+  
+  .map-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .map-controls .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .item-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pickup-map {
+    height: 200px;
+  }
+  
+  .map-controls .btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/auth/dashboard/vendor_dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/pickup/vendor/items" class="nav-link"><i class="fas fa-box"></i> Available Items</a>
+        <a href="/pickup/vendor/requests" class="nav-link"><i class="fas fa-list"></i> My Requests</a>
+      </nav>
+      
+      <div class="user-actions">
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          <i class="fas fa-user"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-box"></i>
+        {{ item.name }}
+        <span class="vendor-badge">Vendor View</span>
+      </h1>
+      <a href="/pickup/vendor/items" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Items
+      </a>
+    </div>
+    
+    <div class="item-layout">
+      <div>
+        <section class="card">
+          <h3><i class="fas fa-info-circle"></i> Item Details</h3>
+          
+          {% if item.photo_path %}
+          <div class="photo-preview">
+            <img src="{{ item.photo_path }}" alt="Item photo" />
+          </div>
+          {% endif %}
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Name</div>
+              <div class="info-value">{{ item.name }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">ID</div>
+              <div class="info-value">#{{ item.id }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Status</div>
+              <div class="info-value status status-collected">{{ item.status }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Department</div>
+              <div class="info-value">{{ department.name if department else '-' }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Category</div>
+              <div class="info-value">{{ category.name if category else '-' }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Serial Number</div>
+              <div class="info-value">{{ item.serial_number or '-' }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Purchase Date</div>
+              <div class="info-value">{{ item.purchase_date or '-' }}</div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Reported Date</div>
+              <div class="info-value">{{ item.reported_date.strftime('%Y-%m-%d %H:%M') if item.reported_date else '-' }}</div>
+            </div>
+            
+            {% if item.weight_kg %}
+            <div class="info-item">
+              <div class="info-label">Weight</div>
+              <div class="info-value">{{ item.weight_kg }} kg</div>
+            </div>
+            {% endif %}
+            
+            {% if item.price %}
+            <div class="info-item">
+              <div class="info-label">Price</div>
+              <div class="info-value">Rs {{ "%.2f"|format(item.price) }}</div>
+            </div>
+            {% endif %}
+            
+            {% if item.notes %}
+            <div class="info-item">
+              <div class="info-label">Notes</div>
+              <div class="info-value">{{ item.notes }}</div>
+            </div>
+            {% endif %}
+          </div>
+        </section>
+        <section class="card">
+          <h3><i class="fas fa-sync-alt"></i> Update Item Status</h3>
+          {% if item.status == 'DISPOSED' %}
+          <div class="alert alert-warning">
+            <i class="fas fa-ban"></i> This item is DISPOSED. Further edits are disabled.
+          </div>
+          <form class="update-status-form" onsubmit="return false;" style="opacity:0.6; pointer-events:none;">
+          {% else %}
+          <form class="update-status-form" onsubmit="updateItemStatus(event)">
+          {% endif %}
+            <div style="margin-bottom: 1rem;">
+              <label for="status">New Status</label>
+              <select name="status" id="status" required>
+                <option value="COLLECTED" {% if item.status == 'COLLECTED' %}selected{% endif %}>Collected</option>
+                <option value="IN_STORAGE">In Storage</option>
+                <option value="SENT_TO_VENDOR">Sent to Vendor</option>
+                <option value="RECYCLED">Recycled</option>
+                <option value="DISPOSED">Disposed</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <label for="remarks">Remarks</label>
+              <textarea name="remarks" id="remarks" placeholder="Enter status update remarks (optional)" style="min-height: 80px; resize: vertical;"></textarea>
+            </div>
+
+            <button class="btn btn-success" type="submit" style="width: 100%;" {% if item.status == 'DISPOSED' %}disabled{% endif %}>
+              <i class="fas fa-save"></i> Update Status
+            </button>
+          </form>
+        </section>
+      </div>
+      
+      <div>
+        <section class="card">
+          <h3><i class="fas fa-qrcode"></i> QR Code</h3>
+          <div class="qr-section">
+            <img src="/items/{{ item.id }}/qr.png" alt="QR Code" class="qr-code" width="220" height="220" />
+            <p>Scan to view/confirm pickup.</p>
+          </div>
+        </section>
+        
+        {% if pickup_request.pickup_location %}
+        <section class="location-section">
+          <h4><i class="fas fa-map-marker-alt"></i> Pickup Location</h4>
+          <div class="location-info">
+            <p><strong>Location:</strong> {{ pickup_request.pickup_location }}</p>
+            {% if pickup_request.pickup_coordinates %}
+            <p><strong>Coordinates:</strong>
+              {{ pickup_request.pickup_coordinates.latitude }}, {{ pickup_request.pickup_coordinates.longitude }}
+            </p>
+
+            <div class="map-container-wrapper">
+              {% set lat = pickup_request.pickup_coordinates.latitude if pickup_request.pickup_coordinates else None %}
+              {% set lng = pickup_request.pickup_coordinates.longitude if pickup_request.pickup_coordinates else None %}
+              {% if lat and lng %}
+                <div class="pickup-map loaded" style="padding:0;">
+                  <iframe
+                    src="https://www.google.com/maps?q={{ lat }},{{ lng }}&z=17&output=embed"
+                    width="100%" height="100%" style="border:0;"
+                    loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              {% elif pickup_request.pickup_location %}
+                <div class="pickup-map loaded" style="padding:0;">
+                  <iframe
+                    src="https://www.google.com/maps?q={{ pickup_request.pickup_location | replace(' ', '+') }}&z=17&output=embed"
+                    width="100%" height="100%" style="border:0;"
+                    loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              {% else %}
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle"></i>
+                  <strong>No coordinates available.</strong> The user may not have set their exact location yet.
+                </div>
+              {% endif %}
+
+              <div style="text-align: center; margin-top: 0.75rem;">
+                {% set lat = pickup_request.pickup_coordinates.latitude if pickup_request.pickup_coordinates else None %}
+                {% set lng = pickup_request.pickup_coordinates.longitude if pickup_request.pickup_coordinates else None %}
+                {% if lat and lng %}
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination={{ lat }},{{ lng }}&travelmode=driving"
+                    target="_blank"
+                    rel="noopener"
+                    class="btn btn-success btn-large"
+                  >
+                    <i class="fas fa-map-marker-alt"></i> Open in Google Maps
+                  </a>
+                {% elif pickup_request.pickup_location %}
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination={{ pickup_request.pickup_location | replace(' ', '+') }}&travelmode=driving"
+                    target="_blank"
+                    rel="noopener"
+                    class="btn btn-success btn-large"
+                  >
+                    <i class="fas fa-map-marker-alt"></i> Open in Google Maps
+                  </a>
+                {% else %}
+                  <button type="button" class="btn btn-success btn-large" disabled title="Pickup location not available">
+                    <i class="fas fa-map-marker-alt"></i> Open in Google Maps
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+
+            {% else %}
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              <strong>No coordinates available.</strong> The user may not have set their exact location yet.
+              <br><small>Location: {{ pickup_request.pickup_location }}</small>
+            </div>
+            {% endif %}
+            <p><strong>Approved:</strong> {{ pickup_request.approved_at.strftime('%Y-%m-%d %H:%M') if pickup_request.approved_at else 'N/A' }}</p>
+          </div>
+        </section>
+        {% else %}
+        <section class="location-section">
+          <h4><i class="fas fa-map-marker-alt"></i> Pickup Location</h4>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>No pickup location set.</strong> The user has not provided a pickup location yet.
+          </div>
+        </section>
+        {% endif %}
+         
+        <section class="pickup-info">
+          <h4><i class="fas fa-handshake"></i> Pickup Request Details</h4>
+          <div class="pickup-details">
+            <p><strong>Requested:</strong> {{ pickup_request.requested_at.strftime('%Y-%m-%d %H:%M') if pickup_request.requested_at else 'N/A' }}</p>
+            <p><strong>Status:</strong> <span class="status status-collected">{{ pickup_request.status }}</span></p>
+            {% if pickup_request.vendor_notes %}
+            <p><strong>Your Notes:</strong> {{ pickup_request.vendor_notes }}</p>
+            {% endif %}
+            {% if pickup_request.user_notes %}
+            <p><strong>User Notes:</strong> {{ pickup_request.user_notes }}</p>
+            {% endif %}
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+
+    // No JS needed for opening Google Maps; link uses direct URL
+    
+    async function updateItemStatus(e) {
+      e.preventDefault();
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      
+      // Show loading state
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+      submitBtn.disabled = true;
+      
+      try {
+        const data = new FormData(e.target);
+        
+        const res = await fetch('/items/{{ item.id }}/status', { 
+          method: 'POST', 
+          body: data 
+        });
+        
+        if (res.ok) {
+          const responseData = await res.json();
+          
+          // Show success message
+          const successMsg = document.createElement('div');
+          successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Status updated successfully!';
+          successMsg.style.background = 'rgba(16, 185, 129, 0.2)';
+          successMsg.style.color = 'var(--eco-green)';
+          successMsg.style.padding = '1rem';
+          successMsg.style.borderRadius = 'var(--radius)';
+          successMsg.style.marginBottom = '1.5rem';
+          successMsg.style.display = 'flex';
+          successMsg.style.alignItems = 'center';
+          successMsg.style.gap = '0.5rem';
+          successMsg.style.border = '1px solid var(--eco-green)';
+          
+          e.target.parentNode.insertBefore(successMsg, e.target);
+          
+          // Reload after a short delay
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          const errorData = await res.json();
+          alert('Error updating status: ' + (errorData.detail || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        alert('Error updating status. Please try again.');
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

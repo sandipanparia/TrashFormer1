@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - TrashFormer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+:root {
+  --primary: #38BDF8;
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981;
+  --eco-green-light: #34D399;
+  --bg-dark: #020617;
+  --bg-light: #0F172A;
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2);
+  --text-primary: #E2E8F0;
+  --text-secondary: #64748B;
+  --radius: 10px;
+  --transition: all 0.3s ease-in-out;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(10deg) scale(1.1);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.nav-link.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--eco-green);
+}
+
+.btn-secondary:hover {
+  background-color: var(--eco-green);
+  color: var(--text-primary);
+  border-color: var(--eco-green);
+}
+
+.btn-danger {
+  background: #D32F2F;
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+  background: #c62828;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.profile-card {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 2.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+  transition: var(--transition);
+}
+
+.profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  transition: var(--transition);
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+.profile-info h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.25rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.profile-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--eco-green);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+hr {
+  margin: 1.5rem 0;
+  border: 0;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  background: rgba(2, 6, 23, 0.7);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.field:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+}
+
+.field strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.field span {
+  color: var(--text-primary);
+}
+
+.stats-section {
+  margin-top: 2rem;
+}
+
+.stats-section h3 {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: rgba(2, 6, 23, 0.7);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.site-footer {
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  padding: 3rem 1.5rem 1rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.footer-section h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--eco-green);
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.footer-section p, .footer-section a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1.8;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-section a:hover {
+  color: var(--eco-green);
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-links a {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.social-links a:hover {
+  color: var(--eco-green);
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-card {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.field, .stat-card {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.field:nth-child(1) { animation-delay: 0.1s; }
+.field:nth-child(2) { animation-delay: 0.2s; }
+.field:nth-child(3) { animation-delay: 0.3s; }
+.field:nth-child(4) { animation-delay: 0.4s; }
+.field:nth-child(5) { animation-delay: 0.5s; }
+.field:nth-child(6) { animation-delay: 0.6s; }
+
+@media (max-width: 1024px) {
+  .header-container {
+    flex-wrap: wrap;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .main-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .profile-card {
+    padding: 2rem;
+  }
+  
+  .profile-row {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .avatar {
+    margin: 0 auto;
+  }
+  
+  .profile-actions {
+    justify-content: center;
+  }
+  
+  .grid, .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .social-links {
+    justify-content: center;
+  }
+}
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    
+    <header>
+        <div class="container header-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-recycle"></i>
+                </div>
+                <span>TrashFormer</span>
+            </a>
+            
+            <nav class="main-nav">
+                <a href="/items/" class="nav-link"><i class="fas fa-laptop"></i> Items</a>
+                <a href="/schedules/" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+               <!-- <a href="/vendors/" class="nav-link"><i class="fas fa-store"></i> Vendors</a> -->
+                <a href="/reports/" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a>
+            </nav>
+            
+            <div class="user-actions">
+                <a href="/auth/logout" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="profile-card">
+            <div class="profile-row">
+                <div class="avatar">
+                    {{ (user.full_name or user.username)[:1] | upper }}
+                </div>
+                <div class="profile-info">
+                    <h2>{{ user.full_name or user.username }}</h2>
+                    <span class="profile-badge">{{ role }} account</span>
+                    
+                    <div class="profile-actions">
+                        {% if role == 'user' %}
+                        <a class="btn btn-primary" href="/auth/dashboard/user_dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Open Dashboard
+                        </a>
+                        {% else %}
+                        <a class="btn btn-primary" href="/auth/dashboard/vendor_dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Open Dashboard
+                        </a>
+                        {% endif %}
+                        <a class="btn btn-secondary" href="/items/">
+                            <i class="fas fa-list"></i> View All Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="grid">
+                <div class="field">
+                    <strong>Username</strong>
+                    {{ user.username }}
+                </div>
+                <div class="field">
+                    <strong>Email</strong>
+                    {{ user.email }}
+                </div>
+                <div class="field">
+                    <strong>Phone</strong>
+                    {{ user.phone or 'Not provided' }}
+                </div>
+                <div class="field">
+                    <strong>Member Since</strong>
+                    {{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'N/A' }}
+                </div>
+                {% if role == 'user' and department_name %}
+                <div class="field">
+                    <strong>Department</strong>
+                    {{ department_name }}
+                </div>
+                {% endif %}
+                {% if role == 'vendor' %}
+                <div class="field">
+                    <strong>Company</strong>
+                    {{ vendor_name or 'N/A' }}
+                </div>
+                <div class="field">
+                    <strong>License</strong>
+                    {{ vendor_license_no or 'N/A' }}
+                </div>
+                <div class="field">
+                    <strong>Status</strong>
+                    <span style="color: {{ 'var(--eco-green)' if vendor_verified else '#FBC02D' }};">
+                        {{ 'Verified' if vendor_verified else 'Pending' }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if role == 'user' %}
+            <div class="stats-section">
+                <h3><i class="fas fa-chart-pie"></i> My E-Waste Stats</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ total_reported_items or 0 }}</div>
+                        <div class="stat-label">Total Reported</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ total_in_progress or 0 }}</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ total_recycled or 0 }}</div>
+                        <div class="stat-label">Recycled</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ total_disposed or 0 }}</div>
+                        <div class="stat-label">Properly Disposed</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TrashFormer</h3>
+                    <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links" style="list-style: none;">
+                        <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+                        <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+                        <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+                        <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul class="footer-links" style="list-style: none;">
+                        <li><i class="fas fa-envelope"></i> aunkurkumarsaha@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +91 8420280792</li>
+                        <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 TrashFormer. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let particlesArray = [];
+
+            const colors = [
+                'rgba(56, 189, 248, 0.5)',
+                'rgba(16, 185, 129, 0.5)',
+                'rgba(96, 165, 250, 0.5)',
+                'rgba(52, 211, 153, 0.5)'
+            ];
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2.5 + 0.5;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    
+                    if (this.x > canvas.width || this.x < 0) {
+                        this.speedX = -this.speedX;
+                    }
+                    if (this.y > canvas.height || this.y < 0) {
+                        this.speedY = -this.speedY;
+                    }
+                }
+                
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            function init() {
+                particlesArray = [];
+                const numberOfParticles = (canvas.height * canvas.width) / 9000;
+                
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particlesArray.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = 0; i < particlesArray.length; i++) {
+                    particlesArray[i].update();
+                    particlesArray[i].draw();
+                    
+                    for (let j = i; j < particlesArray.length; j++) {
+                        const dx = particlesArray[i].x - particlesArray[j].x;
+                        const dy = particlesArray[i].y - particlesArray[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 100) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                            ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                init();
+            });
+
+            init();
+            animate();
+
+            const statCards = document.querySelectorAll('.stat-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            statCards.forEach(card => {
+                card.style.opacity = 0;
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+            
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

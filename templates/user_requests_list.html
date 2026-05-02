@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pickup Requests - TrashFormer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places" async defer></script>
+  <style>
+:root {
+  --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981; /* New eco-friendly green color */
+  --eco-green-light: #34D399; /* Lighter green variant */
+  --bg-dark: #020617; /* Even darker, more neutral background */
+  --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+  --text-primary: #E2E8F0; /* Slightly softer white */
+  --text-secondary: #64748B; /* Softer gray */
+  --radius: 10px; /* Slightly larger radius */
+  --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+/* Header */
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(10deg) scale(1.1);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-icon {
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--border-color);
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-dark);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+.btn-success {
+  background: var(--eco-green);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+  background: #0da271;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-danger {
+  background: #EF4444;
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+  background: #DC2626;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Main Content */
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title i {
+  color: var(--primary);
+  background: rgba(56, 189, 248, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Request Cards */
+.requests-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.request-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.request-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  border-color: var(--eco-green);
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.request-title {
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.request-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: rgba(255, 166, 46, 0.15);
+  color: #d18a0c;
+}
+
+.status-approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #0da271;
+}
+
+.status-rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #DC2626;
+}
+
+.request-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  background: rgba(56, 189, 248, 0.05);
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.detail-value {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.request-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  overflow-y: auto;
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  margin: 2% auto;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.close {
+  color: var(--text-secondary);
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.close:hover {
+  color: var(--text-primary);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-family: inherit;
+  color: var(--text-primary);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.form-help {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.form-group.error input,
+.form-group.error textarea {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.form-group.error .form-help {
+  color: #EF4444;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Location Method Selector */
+.location-method-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.radio-option:hover {
+  border-color: var(--primary);
+  background-color: rgba(56, 189, 248, 0.05);
+}
+
+.radio-option input[type="radio"] {
+  display: none;
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  position: relative;
+  transition: var(--transition);
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.radio-option i {
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+/* Location Sections */
+.location-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: rgba(15, 23, 42, 0.5);
+}
+
+/* Map Container */
+.map-container-wrapper {
+  margin: 1rem 0;
+}
+
+.map-container {
+  width: 100%;
+  height: 300px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  display: none;
+}
+
+.map-container.show {
+  display: block;
+}
+
+.map-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Search Container */
+.search-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-container input {
+  flex: 1;
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.8rem;
+  border-radius: var(--radius);
+}
+
+.search-results {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  display: none;
+}
+
+.search-result-item {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.search-result-item:hover {
+  background-color: rgba(56, 189, 248, 0.1);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+/* Coordinates Display */
+.coordinates-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.coordinate-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.coordinate-input label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.coordinate-input input {
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+}
+
+/* Address Display */
+.address-display {
+  margin: 1rem 0;
+}
+
+.address-display label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.address-display input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: rgba(15, 23, 42, 0.5);
+  color: var(--text-primary);
+}
+
+/* Live Location */
+.live-location-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: rgba(56, 189, 248, 0.1);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.live-location-info i {
+  color: var(--primary);
+}
+
+.live-location-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.location-status {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  border: 1px solid;
+}
+
+.location-status.success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--eco-green);
+  border-color: var(--eco-green);
+}
+
+.location-status.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+  border-color: #EF4444;
+}
+
+.location-status.loading {
+  background-color: rgba(255, 166, 46, 0.1);
+  color: #d18a0c;
+  border-color: #d18a0c;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  color: var(--text-secondary);
+}
+
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+/* Google Maps Status */
+.google-maps-status {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.google-maps-status.info {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: var(--border-color);
+  color: var(--primary);
+}
+
+.google-maps-status.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--eco-green);
+  color: var(--eco-green);
+}
+
+.google-maps-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #EF4444;
+  color: #EF4444;
+}
+
+.google-maps-status i {
+  margin-right: 0.5rem;
+}
+
+/* Footer */
+.site-footer {
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  padding: 3rem 1.5rem 1rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.footer-section h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--eco-green);
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.footer-section p, .footer-section a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1.8;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-section a:hover {
+  color: var(--eco-green);
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-links a {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.social-links a:hover {
+  color: var(--eco-green);
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .request-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .request-actions {
+    flex-direction: column;
+  }
+  
+  .modal-content {
+    margin: 5% auto;
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 85vh;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .location-method-selector {
+    gap: 0.5rem;
+  }
+  
+  .radio-option {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .coordinates-display {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .map-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .map-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .search-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .search-container input {
+    width: 100%;
+  }
+  
+  .search-container button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    margin: 2% auto;
+    padding: 1rem;
+    max-height: 90vh;
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .radio-option {
+    padding: 0.4rem;
+    font-size: 0.85rem;
+  }
+  
+  .radio-option i {
+    font-size: 1rem;
+  }
+  
+  .radio-custom {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .radio-option input[type="radio"]:checked + .radio-custom::after {
+    width: 6px;
+    height: 6px;
+  }
+}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/auth/dashboard/user_dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/items/" class="nav-link"><i class="fas fa-box"></i> My Items</a>
+        <a href="/pickup/user/requests" class="nav-link active"><i class="fas fa-handshake"></i> Pickup Requests</a>
+      </nav>
+      
+      <div class="user-actions">
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          {{ (current_user.full_name or current_user.username)[:1] | upper }}
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-handshake"></i>
+        Pickup Requests
+      </h1>
+    </div>
+    
+    {% if pickup_requests %}
+    <div class="requests-grid">
+      {% for request in pickup_requests %}
+      <div class="request-card">
+        <div class="request-header">
+          <div>
+            <h3 class="request-title">{{ request.item.name }}</h3>
+            <p class="request-subtitle">Requested by {{ request.vendor.name if request.vendor else 'Unknown Vendor' }}</p>
+          </div>
+          <span class="status-badge status-{{ request.status }}">{{ request.status }}</span>
+        </div>
+        
+        <div class="request-details">
+          <div class="detail-item">
+            <div class="detail-label">Item ID</div>
+            <div class="detail-value">#{{ request.item.id[:8] }}</div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-label">Vendor</div>
+            <div class="detail-value">{{ request.vendor.name if request.vendor else 'Unknown' }}</div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-label">Requested</div>
+            <div class="detail-value">{{ request.requested_at.strftime('%Y-%m-%d %H:%M') if request.requested_at else 'N/A' }}</div>
+          </div>
+          
+          {% if request.vendor_notes %}
+          <div class="detail-item">
+            <div class="detail-label">Vendor's Final Price <iv>
+            <div class="detail-value">Rs {{ request.vendor_notes }}</div>
+          </div>
+          {% endif %} 
+        </div>
+        
+        {% if request.status == 'pending' %}
+        <div class="request-actions">
+          <button class="btn btn-success" onclick="openApproveModal('{{ request._id }}', '{{ request.item.name }}')">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="btn btn-danger" onclick="openRejectModal('{{ request._id }}', '{{ request.item.name }}')">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>
+        {% elif request.status == 'approved' %}
+        <div class="request-actions">
+          <span class="status-badge status-approved">Approved on {{ request.approved_at.strftime('%Y-%m-%d %H:%M') if request.approved_at else 'N/A' }}</span>
+        </div>
+        {% elif request.status == 'rejected' %}
+        <div class="request-actions">
+          <span class="status-badge status-rejected">Rejected on {{ request.rejected_at.strftime('%Y-%m-%d %H:%M') if request.rejected_at else 'N/A' }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h3>No Pickup Requests</h3>
+      <p>You don't have any pickup requests at the moment.</p>
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- Approve Modal -->
+  <div id="approveModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Approve Pickup Request</h3>
+        <span class="close" onclick="closeApproveModal()">&times;</span>
+      </div>
+      <form id="approveForm">
+        <input type="hidden" id="approveRequestId" name="requestId">
+        
+        <div class="form-group">
+          <label for="locationMethod">Location Method:</label>
+          <div class="location-method-selector">
+            <label class="radio-option">
+              <input type="radio" name="locationMethod" value="map" checked>
+              <span class="radio-custom"></span>
+              <i class="fas fa-map-marker-alt"></i> Select from Google Maps
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="locationMethod" value="live">
+              <span class="radio-custom"></span>
+              <i class="fas fa-location-arrow"></i> Use Live Location
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="locationMethod" value="manual">
+              <span class="radio-custom"></span>
+              <i class="fas fa-edit"></i> Enter Manually
+            </label>
+          </div>
+        </div>
+
+        <!-- Google Maps Location Section -->
+        <div id="mapLocationSection" style="display: none;">
+          <div class="location-method-header">
+            <h4><i class="fas fa-map-marker-alt"></i> Select from Google Maps</h4>
+            <p>Click on the map or search for a location to set the pickup point</p>
+          </div>
+          
+          <!-- Google Maps Status -->
+          <div id="googleMapsStatus" class="google-maps-status" style="display: none;">
+            <i class="fas fa-info-circle"></i> Loading Google Maps...
+          </div>
+          
+          <!-- Location Search -->
+          <div class="search-container">
+            <input type="text" id="locationSearch" placeholder="Search for a location..." class="search-input">
+            <button type="button" onclick="toggleMap()" class="btn btn-secondary">
+              <i class="fas fa-map"></i> Show/Hide Map
+            </button>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+          
+          <div class="map-container-wrapper">
+            <div id="map" class="map-container"></div>
+            <div class="map-controls">
+              <button type="button" class="btn btn-secondary" onclick="getCurrentLocation()">
+                <i class="fas fa-crosshairs"></i> My Location
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="toggleMap()">
+                <i class="fas fa-eye"></i> Show/Hide Map
+              </button>
+            </div>
+          </div>
+          
+          <div class="coordinates-display">
+            <div class="coordinate-input">
+              <label>Latitude:</label>
+              <input type="number" id="latitude" step="any" placeholder="Latitude" readonly>
+            </div>
+            <div class="coordinate-input">
+              <label>Longitude:</label>
+              <input type="number" id="longitude" step="any" placeholder="Longitude" readonly>
+            </div>
+            <div class="precision-indicator" id="precisionIndicator" style="display: none;">
+              <small style="color: var(--eco-green);">
+                <i class="fas fa-crosshairs"></i> High Precision: 8 decimal places
+              </small>
+            </div>
+          </div>
+          
+          <div class="address-display">
+            <label>Selected Address:</label>
+            <input type="text" id="selectedAddress" placeholder="Address will appear here..." readonly>
+          </div>
+        </div>
+
+        <!-- Live Location Section -->
+        <div id="liveLocationSection" class="form-group location-section" style="display: none;">
+          <div class="live-location-info">
+            <i class="fas fa-info-circle"></i>
+            <p>Click the button below to get your current location using GPS.</p>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="getLiveLocation()" id="getLiveLocationBtn">
+            <i class="fas fa-location-arrow"></i> Get My Current Location
+          </button>
+          <div id="liveLocationStatus" class="location-status"></div>
+          <div class="coordinates-display">
+            <div class="coordinate-input">
+              <label>Latitude:</label>
+              <input type="number" id="liveLatitude" step="any" placeholder="Latitude" readonly>
+            </div>
+            <div class="coordinate-input">
+              <label>Longitude:</label>
+              <input type="number" id="liveLongitude" step="any" placeholder="Longitude" readonly>
+            </div>
+          </div>
+          <div class="address-display">
+            <label>Current Address:</label>
+            <input type="text" id="liveAddress" placeholder="Address will appear here..." readonly>
+          </div>
+        </div>
+
+        <!-- Manual Location Section -->
+        <div id="manualLocationSection" class="form-group location-section" style="display: none;">
+          <label for="manualPickupLocation">Enter Pickup Location:</label>
+          <input type="text" id="manualPickupLocation" name="pickupLocation" placeholder="Enter pickup location or address" required>
+          <small class="form-help">Please provide a clear address or location description</small>
+        </div>
+
+        <div class="form-group">
+          <label for="userNotes">Notes (Optional):</label>
+          <textarea id="userNotes" name="userNotes" placeholder="Add any notes for the vendor..."></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeApproveModal()">Cancel</button>
+          <button type="submit" class="btn btn-success" id="approveSubmitBtn">
+            <i class="fas fa-check"></i> Approve Request
+          </button>
+          <button type="button" class="btn btn-primary" onclick="testFormSubmission()" style="margin-top: 10px;">
+            <i class="fas fa-bug"></i> Test Submission
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div id="rejectModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Reject Pickup Request</h3>
+        <span class="close" onclick="closeRejectModal()">&times;</span>
+      </div>
+      <form id="rejectForm">
+        <input type="hidden" id="rejectRequestId" name="requestId">
+        <div class="form-group">
+          <label for="rejectNotes">Reason for Rejection (Optional):</label>
+          <textarea id="rejectNotes" name="rejectNotes" placeholder="Please provide a reason for rejection..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-times"></i> Reject Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+            <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+
+    // Global variables
+    let map, geocoder, placesService, searchBox;
+    let googleMapsReady = false;
+    let mapInitialized = false;
+    
+    // Check if Google Maps is ready
+    function checkGoogleMapsReady() {
+      if (typeof google !== 'undefined' && google.maps && google.maps.Map) {
+        googleMapsReady = true;
+        console.log('Google Maps API is ready');
+        return true;
+      }
+      return false;
+    }
+    
+    // Initialize Google Maps with retry mechanism
+    function initGoogleMaps() {
+      console.log('Initializing Google Maps...');
+      showGoogleMapsStatus('Loading Google Maps...', 'info');
+      
+      if (checkGoogleMapsReady()) {
+        console.log('Google Maps already ready');
+        showGoogleMapsStatus('Google Maps ready!', 'success');
+        return;
+      }
+      
+      // Wait for Google Maps to load
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
+      const checkInterval = setInterval(() => {
+        attempts++;
+        console.log(`Checking Google Maps... Attempt ${attempts}`);
+        showGoogleMapsStatus(`Loading Google Maps... (${attempts}/${maxAttempts})`, 'info');
+        
+        if (checkGoogleMapsReady()) {
+          clearInterval(checkInterval);
+          console.log('Google Maps loaded successfully');
+          showGoogleMapsStatus('Google Maps loaded successfully!', 'success');
+          
+          // Initialize map if needed
+          if (!mapInitialized) {
+            setTimeout(() => {
+              initMap();
+            }, 100);
+          }
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          console.error('Google Maps failed to load after maximum attempts');
+          showGoogleMapsStatus('Google Maps failed to load. Live location will still work.', 'error');
+        }
+      }, 100);
+    }
+    
+    // Show Google Maps loading status
+    function showGoogleMapsStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('googleMapsStatus');
+      if (statusDiv) {
+        statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check' : 'info-circle'}"></i> ${message}`;
+        statusDiv.className = `google-maps-status ${type}`;
+        statusDiv.style.display = 'block';
+      }
+    }
+    
+    // Initialize the map
+    function initMap() {
+      console.log('initMap() called');
+      
+      if (mapInitialized) {
+        console.log('Map already initialized');
+        return;
+      }
+      
+      if (!checkGoogleMapsReady()) {
+        console.log('Google Maps not ready, retrying...');
+        setTimeout(initMap, 100);
+        return;
+      }
+      
+      const mapContainer = document.getElementById('map');
+      if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+      }
+      
+      try {
+        // Create map with high precision settings
+        map = new google.maps.Map(mapContainer, {
+          center: { lat: 20.5937, lng: 78.9629 }, // Center of India
+          zoom: 5,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+          zoomControl: true,
+          scaleControl: true,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          // High precision settings
+          gestureHandling: 'greedy',
+          clickableIcons: false,
+          styles: [
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+            {
+              featureType: "administrative.locality",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#d59563" }]
+            },
+            {
+              featureType: "poi",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#d59563" }]
+            },
+            {
+              featureType: "poi.park",
+              elementType: "geometry",
+              stylers: [{ color: "#263c3f" }]
+            },
+            {
+              featureType: "poi.park",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#6b9a76" }]
+            },
+            {
+              featureType: "road",
+              elementType: "geometry",
+              stylers: [{ color: "#38414e" }]
+            },
+            {
+              featureType: "road",
+              elementType: "geometry.stroke",
+              stylers: [{ color: "#212a37" }]
+            },
+            {
+              featureType: "road",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#9ca5b3" }]
+            },
+            {
+              featureType: "road.highway",
+              elementType: "geometry",
+              stylers: [{ color: "#746855" }]
+            },
+            {
+              featureType: "road.highway",
+              elementType: "geometry.stroke",
+              stylers: [{ color: "#1f2835" }]
+            },
+            {
+              featureType: "road.highway",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#f3d19c" }]
+            },
+            {
+              featureType: "transit",
+              elementType: "geometry",
+              stylers: [{ color: "#2f3948" }]
+            },
+            {
+              featureType: "transit.station",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#d59563" }]
+            },
+            {
+              featureType: "water",
+              elementType: "geometry",
+              stylers: [{ color: "#17263c" }]
+            },
+            {
+              featureType: "water",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#515c6d" }]
+            },
+            {
+              featureType: "water",
+              elementType: "labels.text.stroke",
+              stylers: [{ color: "#17263c" }]
+            }
+          ]
+        });
+        
+        // Initialize geocoder and places service
+        geocoder = new google.maps.Geocoder();
+        placesService = new google.maps.places.PlacesService(map);
+        
+        // Add click listener for precise location selection
+        map.addListener('click', function(event) {
+          const clickedLatLng = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          };
+          
+          console.log('Map clicked at:', clickedLatLng);
+          placeMarker(clickedLatLng);
+        });
+        
+        // Add double-click listener for even more precise selection
+        map.addListener('dblclick', function(event) {
+          const clickedLatLng = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          };
+          
+          console.log('Map double-clicked at:', clickedLatLng);
+          placeMarker(clickedLatLng);
+          
+          // Zoom in even more for maximum precision
+          map.setZoom(20);
+        });
+        
+        mapInitialized = true;
+        console.log('Map initialized successfully');
+        
+        // Show success status
+        showGoogleMapsStatus('Map ready! Click anywhere to select location', 'success');
+        
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        showGoogleMapsStatus('Error initializing map: ' + error.message, 'error');
+      }
+    }
+    
+    // Initialize search box
+    function initSearchBox() {
+      if (!map || !google.maps.places) {
+        console.log('Map or Places not ready for search box');
+        return;
+      }
+      
+      try {
+        const searchInput = document.getElementById('locationSearch');
+        if (searchInput) {
+          searchBox = new google.maps.places.SearchBox(searchInput);
+          
+          // Bias search box towards map viewport
+          map.addListener('bounds_changed', function() {
+            searchBox.setBounds(map.getBounds());
+          });
+          
+          // Listen for search results
+          searchBox.addListener('places_changed', function() {
+            const places = searchBox.getPlaces();
+            if (places.length === 0) return;
+            
+            showSearchResults(places);
+          });
+          
+          console.log('Search box initialized');
+        }
+      } catch (error) {
+        console.error('Error initializing search box:', error);
+      }
+    }
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Page loaded, initializing Google Maps...');
+      initGoogleMaps();
+    });
+    
+    // Also try to initialize when window loads
+    window.addEventListener('load', function() {
+      console.log('Window loaded, checking Google Maps...');
+      if (!googleMapsReady) {
+        initGoogleMaps();
+      }
+    });
+    
+    // Place marker on map and update coordinates
+    function placeMarker(latLng) {
+      if (!map) {
+        console.error('Map not initialized');
+        return;
+      }
+      
+      // Remove existing marker
+      if (window.currentMarker) {
+        window.currentMarker.setMap(null);
+      }
+      
+      // Create new marker with high precision
+      window.currentMarker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: "Selected Location",
+        draggable: true, // Allow dragging for fine-tuning
+        animation: google.maps.Animation.DROP
+      });
+      
+      // Update coordinate fields with maximum precision
+      const latField = document.getElementById('latitude');
+      const lngField = document.getElementById('longitude');
+      
+      if (latField) {
+        latField.value = latLng.lat.toFixed(8); // 8 decimal places for maximum precision
+        console.log('Latitude updated:', latField.value);
+      }
+      if (lngField) {
+        lngField.value = latLng.lng.toFixed(8); // 8 decimal places for maximum precision
+        console.log('Longitude updated:', lngField.value);
+      }
+      
+      // Show precision indicator
+      const precisionIndicator = document.getElementById('precisionIndicator');
+      if (precisionIndicator) {
+        precisionIndicator.style.display = 'block';
+      }
+      
+      // Get address from coordinates
+      getAddressFromCoordinates(latLng);
+      
+      // Add drag listener for fine-tuning
+      window.currentMarker.addListener('dragend', function() {
+        const newPosition = this.getPosition();
+        const newLatLng = {
+          lat: newPosition.lat(),
+          lng: newPosition.lng()
+        };
+        
+        // Update fields with new position
+        if (latField) {
+          latField.value = newLatLng.lat.toFixed(8);
+        }
+        if (lngField) {
+          lngField.value = newLatLng.lng.toFixed(8);
+        }
+        
+        // Get new address
+        getAddressFromCoordinates(newLatLng);
+        
+        console.log('Marker dragged to new position:', newLatLng);
+      });
+      
+      // Center map on marker
+      map.setCenter(latLng);
+      map.setZoom(18); // Zoom in for precise location selection
+      
+      console.log('Marker placed at:', latLng);
+    }
+    
+    // Get address from coordinates
+    function getAddressFromCoordinates(latLng) {
+      if (!geocoder) return;
+      
+      geocoder.geocode({ location: latLng }, function(results, status) {
+        if (status === 'OK' && results[0]) {
+          const address = results[0].formatted_address;
+          document.getElementById('selectedAddress').value = address;
+          console.log('Address found:', address);
+        } else {
+          console.log('Geocoding failed:', status);
+          document.getElementById('selectedAddress').value = `Location at ${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`;
+        }
+      });
+    }
+    
+    // Search for locations
+    function searchLocation() {
+      const searchQuery = document.getElementById('locationSearch').value;
+      if (!searchQuery.trim()) return;
+      
+      if (!checkGoogleMapsReady()) {
+        alert('Google Maps is still loading. Please wait a moment and try again.');
+        return;
+      }
+      
+      const request = {
+        query: searchQuery,
+        fields: ['name', 'geometry', 'formatted_address']
+      };
+      
+      placesService.findPlaceFromQuery(request, function(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+          showSearchResults(results);
+        } else {
+          showSearchResults([]);
+        }
+      });
+    }
+    
+    // Show search results
+    function showSearchResults(results) {
+      const resultsContainer = document.getElementById('searchResults');
+      if (!resultsContainer) return;
+      
+      resultsContainer.innerHTML = '';
+      resultsContainer.style.display = 'block';
+      
+      results.forEach((place, index) => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'search-result-item';
+        resultItem.innerHTML = `
+          <div class="result-name">${place.name}</div>
+          <div class="result-address">${place.formatted_address}</div>
+        `;
+        
+        resultItem.addEventListener('click', () => {
+          selectSearchResult(place);
+        });
+        
+        resultsContainer.appendChild(resultItem);
+      });
+    }
+    
+    // Select search result
+    function selectSearchResult(place) {
+      if (!place.geometry) return;
+      
+      const latLng = place.geometry.location;
+      
+      // Place marker
+      placeMarker(latLng);
+      
+      // Hide search results
+      hideSearchResults();
+      
+      // Clear search input
+      const searchInput = document.getElementById('locationSearch');
+      if (searchInput) searchInput.value = '';
+      
+      console.log('Selected location:', place.name);
+    }
+    
+    // Hide search results
+    function hideSearchResults() {
+      const resultsContainer = document.getElementById('searchResults');
+      if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+      }
+    }
+    
+    // Toggle map visibility
+    function toggleMap() {
+      const mapContainer = document.getElementById('map');
+      if (mapContainer) {
+        if (mapContainer.style.display === 'none' || mapContainer.style.display === '') {
+          mapContainer.style.display = 'block';
+          // Initialize map if needed
+          if (!mapInitialized) {
+            setTimeout(initMap, 100);
+          }
+          console.log('Map shown');
+        } else {
+          mapContainer.style.display = 'none';
+          console.log('Map hidden');
+        }
+      }
+    }
+    
+    // Get current location from map
+    function getCurrentLocation() {
+      if (!checkGoogleMapsReady()) {
+        alert('Google Maps is still loading. Please wait a moment and try again.');
+        return;
+      }
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const latLng = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            placeMarker(latLng);
+            console.log('Current location placed on map:', latLng);
+          },
+          function(error) {
+            console.error('Error getting current location:', error);
+            alert('Error getting current location: ' + error.message);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser.');
+      }
+    }
+    
+    // Get live location for live location section
+    function getLiveLocation() {
+      console.log('getLiveLocation() called');
+      
+      const statusDiv = document.getElementById('liveLocationStatus');
+      const latField = document.getElementById('liveLatitude');
+      const lngField = document.getElementById('liveLongitude');
+      const addressField = document.getElementById('liveAddress');
+      
+      if (!statusDiv) {
+        console.error('Live location status div not found');
+        return;
+      }
+      
+      // Clear previous values
+      if (latField) latField.value = '';
+      if (lngField) lngField.value = '';
+      if (addressField) addressField.value = '';
+      
+      // Show loading state
+      statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting your precise location...';
+      statusDiv.className = 'location-status loading';
+      
+      // Check if geolocation is supported
+      if (!navigator.geolocation) {
+        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Geolocation not supported by this browser.';
+        statusDiv.className = 'location-status error';
+        return;
+      }
+      
+      // Set up timeout
+      const timeoutId = setTimeout(() => {
+        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Location request timed out. Please try again.<br><button type="button" class="btn btn-primary" onclick="getLiveLocation()" style="margin-top: 10px; font-size: 0.9rem;">Try Again</button>';
+        statusDiv.className = 'location-status error';
+      }, 20000); // 20 second timeout for better accuracy
+      
+      // Get current position with maximum accuracy settings
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          clearTimeout(timeoutId);
+          
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const accuracy = position.coords.accuracy; // Accuracy in meters
+          
+          console.log('Location obtained successfully:', { lat, lng, accuracy });
+          
+          // Check accuracy - if accuracy is poor, show warning
+          let accuracyMessage = '';
+          if (accuracy > 100) {
+            accuracyMessage = '<br><small style="color: #ff6b6b;">⚠️ Low accuracy detected (' + accuracy.toFixed(0) + 'm). Consider moving to an open area.</small>';
+          } else if (accuracy > 50) {
+            accuracyMessage = '<br><small style="color: #ffa500;">⚠️ Medium accuracy (' + accuracy.toFixed(0) + 'm). Good for most purposes.</small>';
+          } else {
+            accuracyMessage = '<br><small style="color: #4ecdc4;">✅ High accuracy (' + accuracy.toFixed(0) + 'm). Excellent precision!</small>';
+          }
+          
+          // Function to populate fields with retry mechanism
+          function populateFields() {
+            const latField = document.getElementById('liveLatitude');
+            const lngField = document.getElementById('liveLongitude');
+            const addressField = document.getElementById('liveAddress');
+            
+            if (latField) {
+              // Use maximum precision (8 decimal places for very high accuracy)
+              latField.value = lat.toFixed(8);
+              console.log('Latitude field updated:', latField.value);
+            }
+            if (lngField) {
+              // Use maximum precision (8 decimal places for very high accuracy)
+              lngField.value = lng.toFixed(8);
+              console.log('Longitude field updated:', lngField.value);
+            }
+            
+            const initialAddress = `Precise Location at ${lat.toFixed(8)}, ${lng.toFixed(8)}`;
+            if (addressField) {
+              addressField.value = initialAddress;
+              console.log('Address field updated:', addressField.value);
+            }
+          }
+          
+          // Populate fields immediately
+          populateFields();
+          
+          // Retry population after short delays to ensure DOM is ready
+          setTimeout(populateFields, 100);
+          setTimeout(populateFields, 500);
+          setTimeout(populateFields, 1000);
+          
+          // Update status with accuracy information
+          statusDiv.innerHTML = '<i class="fas fa-check"></i> Location obtained successfully!' + accuracyMessage;
+          statusDiv.className = 'location-status success';
+          
+          // Auto-select live location method
+          const liveRadio = document.querySelector('input[name="locationMethod"][value="live"]');
+          if (liveRadio) {
+            liveRadio.checked = true;
+            switchLocationMethod();
+          }
+          
+          // Try to get full address if Google Maps is available (non-blocking)
+          if (typeof google !== 'undefined' && google.maps && geocoder) {
+            geocoder.geocode({ location: { lat, lng } }, function(results, status) {
+              if (status === 'OK' && results[0]) {
+                const addressField = document.getElementById('liveAddress');
+                if (addressField) {
+                  const fullAddress = results[0].formatted_address;
+                  addressField.value = fullAddress;
+                  console.log('Address updated with geocoding:', addressField.value);
+                  
+                  // Update status to show address was found
+                  if (statusDiv.innerHTML.includes('Location obtained successfully!')) {
+                    statusDiv.innerHTML = '<i class="fas fa-check"></i> Location obtained successfully!' + accuracyMessage + '<br><small style="color: #4ecdc4;">📍 Address: ' + fullAddress + '</small>';
+                  }
+                }
+              }
+            });
+          }
+          
+          // Final verification after all attempts
+          setTimeout(() => {
+            const finalLatField = document.getElementById('liveLatitude');
+            const finalLngField = document.getElementById('liveLongitude');
+            const finalAddressField = document.getElementById('liveAddress');
+            
+            console.log('Final field verification:');
+            console.log('Latitude field value:', finalLatField ? finalLatField.value : 'field not found');
+            console.log('Longitude field value:', finalLngField ? finalLngField.value : 'field not found');
+            console.log('Address field value:', finalAddressField ? finalAddressField.value : 'field not found');
+            
+            // If fields are still empty, try one more time
+            if ((!finalLatField || !finalLatField.value) || (!finalLngField || !finalLngField.value)) {
+              console.log('Fields still empty, trying one more time...');
+              populateFields();
+            }
+          }, 1500);
+        },
+        function(error) {
+          clearTimeout(timeoutId);
+          console.error('Geolocation error occurred:', error);
+          
+          let errorMessage = '';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location access denied. Please allow location access in your browser settings.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information unavailable. Please check your GPS/network connection and try again.';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out. Please try again in an open area with good GPS signal.';
+              break;
+            default:
+              errorMessage = 'Error getting location. Please try again in an open area.';
+          }
+          
+          statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + errorMessage + '<br><button type="button" class="btn btn-primary" onclick="getLiveLocation()" style="margin-top: 10px; font-size: 0.9rem;">Try Again</button>';
+          statusDiv.className = 'location-status error';
+        },
+        {
+          enableHighAccuracy: true, // Maximum accuracy
+          timeout: 20000, // 20 second timeout for better accuracy
+          maximumAge: 60000 // 1 minute cache (shorter for better accuracy)
+        }
+      );
+    }
+    
+    // Ensure live location fields are properly initialized
+    function initializeLiveLocationFields() {
+      console.log('Initializing live location fields...');
+      
+      const latField = document.getElementById('liveLatitude');
+      const lngField = document.getElementById('liveLongitude');
+      const addressField = document.getElementById('liveAddress');
+      const statusDiv = document.getElementById('liveLocationStatus');
+      
+      // Clear any existing values
+      if (latField) {
+        latField.value = '';
+        console.log('Cleared latitude field');
+      }
+      if (lngField) {
+        lngField.value = '';
+        console.log('Cleared longitude field');
+      }
+      if (addressField) {
+        addressField.value = '';
+        console.log('Cleared address field');
+      }
+      
+      // Reset status
+      if (statusDiv) {
+        statusDiv.innerHTML = '<i class="fas fa-info-circle"></i> Click "Get My Current Location" to start';
+        statusDiv.className = 'location-status';
+        console.log('Reset status div');
+      }
+      
+      console.log('Live location fields initialized successfully');
+    }
+    
+    // Switch between location methods
+    function switchLocationMethod() {
+      console.log('switchLocationMethod() called');
+      
+      const mapSection = document.getElementById('mapLocationSection');
+      const liveSection = document.getElementById('liveLocationSection');
+      const manualSection = document.getElementById('manualLocationSection');
+      
+      const selectedMethodElement = document.querySelector('input[name="locationMethod"]:checked');
+      if (!selectedMethodElement) {
+        console.error('No location method selected');
+        return;
+      }
+      
+      const selectedMethod = selectedMethodElement.value;
+      console.log('Selected method:', selectedMethod);
+      
+      // Hide all sections first
+      if (mapSection) mapSection.style.display = 'none';
+      if (liveSection) liveSection.style.display = 'none';
+      if (manualSection) manualSection.style.display = 'none';
+      
+      // Show selected section
+      if (selectedMethod === 'map') {
+        if (mapSection) {
+          mapSection.style.display = 'block';
+          console.log('Map section displayed');
+        }
+        // Initialize map if not already done
+        if (typeof google !== 'undefined' && google.maps) {
+          setTimeout(initMap, 100);
+        }
+      } else if (selectedMethod === 'live') {
+        if (liveSection) {
+          liveSection.style.display = 'block';
+          console.log('Live location section displayed');
+          initializeLiveLocationFields();
+        } else {
+          console.error('Live location section not found');
+        }
+      } else if (selectedMethod === 'manual') {
+        if (manualSection) {
+          manualSection.style.display = 'block';
+          console.log('Manual location section displayed');
+        }
+        // Clear manual location field
+        const manualField = document.getElementById('manualPickupLocation');
+        if (manualField) manualField.value = '';
+      }
+      
+      console.log('Successfully switched to location method:', selectedMethod);
+    }
+    
+    // Add event listeners for radio buttons
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM Content Loaded - setting up event listeners');
+      
+      const radioButtons = document.querySelectorAll('input[name="locationMethod"]');
+      radioButtons.forEach(radio => {
+        radio.addEventListener('change', switchLocationMethod);
+      });
+      
+      // Initialize with map method
+      switchLocationMethod();
+      
+      // Add direct event listener for live location button
+      document.addEventListener('click', function(event) {
+        if (event.target && event.target.id === 'getLiveLocationBtn') {
+          console.log('Live location button clicked via event delegation');
+          getLiveLocation();
+        }
+      });
+      
+      // Add direct click handler for approve submit button
+      document.addEventListener('click', function(event) {
+        if (event.target && event.target.id === 'approveSubmitBtn') {
+          console.log('Approve submit button clicked directly');
+          // Trigger form submission
+          const form = document.getElementById('approveForm');
+          if (form) {
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          }
+        }
+      });
+    });
+    
+    // Manual field update function for debugging
+    function updateLiveLocationFields(lat, lng, address) {
+      const latField = document.getElementById('liveLatitude');
+      const lngField = document.getElementById('liveLongitude');
+      const addressField = document.getElementById('liveAddress');
+      
+      if (latField) {
+        latField.value = lat.toFixed(6);
+        console.log('Manual latitude update:', latField.value);
+      }
+      if (lngField) {
+        lngField.value = lng.toFixed(6);
+        console.log('Manual longitude update:', lngField.value);
+      }
+      if (addressField) {
+        addressField.value = address || `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        console.log('Manual address update:', addressField.value);
+      }
+    }
+    
+    function openApproveModal(requestId, itemName) {
+      console.log('Opening approve modal for request:', requestId);
+      
+      document.getElementById('approveRequestId').value = requestId;
+      document.getElementById('approveModal').style.display = 'block';
+      
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+      
+      // Scroll to top of modal to ensure it's visible
+      const modal = document.getElementById('approveModal');
+      modal.scrollTop = 0;
+      
+      // Initialize live location fields
+      initializeLiveLocationFields();
+      
+      // Ensure location method selector is properly initialized
+      const mapRadio = document.querySelector('input[name="locationMethod"][value="map"]');
+      if (mapRadio) {
+        mapRadio.checked = true;
+        switchLocationMethod();
+      }
+      
+      // Initialize map when modal opens if map method is selected
+      setTimeout(() => {
+        const selectedMethod = document.querySelector('input[name="locationMethod"]:checked');
+        if (selectedMethod && selectedMethod.value === 'map') {
+          if (typeof google !== 'undefined' && google.maps) {
+            initMap();
+          }
+        }
+      }, 100);
+      
+      console.log('Approve modal opened successfully for request:', requestId);
+    }
+    
+    function closeApproveModal() {
+      document.getElementById('approveModal').style.display = 'none';
+      document.getElementById('approveForm').reset();
+      
+      // Restore body scroll
+      document.body.style.overflow = 'auto';
+      
+      // Hide all location sections
+      document.querySelectorAll('.location-section').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Reset status
+      const statusDiv = document.getElementById('liveLocationStatus');
+      if (statusDiv) {
+        statusDiv.innerHTML = '';
+        statusDiv.className = '';
+      }
+      
+      // Hide search results
+      hideSearchResults();
+      
+      // Reset map if it exists
+      if (map) {
+        map.setCenter({ lat: 20.5937, lng: 78.9629 });
+        if (window.currentMarker) {
+          window.currentMarker.setMap(null);
+          window.currentMarker = null;
+        }
+      }
+    }
+    
+    function openRejectModal(requestId, itemName) {
+      document.getElementById('rejectRequestId').value = requestId;
+      document.getElementById('rejectModal').style.display = 'block';
+      
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+      
+      // Scroll to top of modal to ensure it's visible
+      const modal = document.getElementById('rejectModal');
+      modal.scrollTop = 0;
+    }
+    
+    function closeRejectModal() {
+      document.getElementById('rejectModal').style.display = 'none';
+      document.getElementById('rejectForm').reset();
+      
+      // Restore body scroll
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const approveModal = document.getElementById('approveModal');
+      const rejectModal = document.getElementById('rejectModal');
+      if (event.target === approveModal) {
+        closeApproveModal();
+      }
+      if (event.target === rejectModal) {
+        closeRejectModal();
+      }
+    }
+    
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const approveModal = document.getElementById('approveModal');
+        const rejectModal = document.getElementById('rejectModal');
+        
+        if (approveModal.style.display === 'block') {
+          closeApproveModal();
+        } else if (rejectModal.style.display === 'block') {
+          closeRejectModal();
+        }
+      }
+    });
+    
+    // Ensure modals are properly positioned on window resize
+    window.addEventListener('resize', function() {
+      const approveModal = document.getElementById('approveModal');
+      const rejectModal = document.getElementById('rejectModal');
+      
+      if (approveModal.style.display === 'block') {
+        approveModal.scrollTop = 0;
+      }
+      if (rejectModal.style.display === 'block') {
+        rejectModal.scrollTop = 0;
+      }
+    });
+    
+    // Handle approve form submission
+    document.getElementById('approveForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      console.log('=== FORM SUBMISSION TRIGGERED ===');
+      console.log('Form submission started');
+      
+      const requestId = document.getElementById('approveRequestId').value;
+      console.log('Request ID from form:', requestId);
+      
+      if (!requestId) {
+        alert('Error: Request ID not found. Please try again.');
+        return;
+      }
+      
+      const locationMethodElement = document.querySelector('input[name="locationMethod"]:checked');
+      
+      if (!locationMethodElement) {
+        alert('Please select a location method.');
+        return;
+      }
+      
+      const locationMethod = locationMethodElement.value;
+      const userNotes = document.getElementById('userNotes').value;
+      
+      console.log('Location method selected:', locationMethod);
+      console.log('Request ID:', requestId);
+      
+      let pickupLocation = '';
+      let coordinates = null;
+      
+      // Get location data based on selected method
+      if (locationMethod === 'map') {
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        const address = document.getElementById('selectedAddress').value;
+        
+        console.log('Map data:', { lat, lng, address });
+        
+        if (!lat || !lng) {
+          alert('Please select a location on the map first.');
+          return;
+        }
+        
+        pickupLocation = address || `${lat}, ${lng}`;
+        coordinates = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        
+      } else if (locationMethod === 'live') {
+        const lat = document.getElementById('liveLatitude').value;
+        const lng = document.getElementById('liveLongitude').value;
+        const address = document.getElementById('liveAddress').value;
+        const statusDiv = document.getElementById('liveLocationStatus');
+        
+        console.log('Live location data:', { lat, lng, address });
+        
+        // Check if location is still loading
+        if (statusDiv && statusDiv.className.includes('loading')) {
+          alert('Location is still being obtained. Please wait for it to complete.');
+          return;
+        }
+        
+        if (!lat || !lng) {
+          alert('Please get your current location first by clicking "Get My Current Location" button.');
+          return;
+        }
+        
+        // Validate coordinates are valid numbers
+        const latNum = parseFloat(lat);
+        const lngNum = parseFloat(lng);
+        
+        if (isNaN(latNum) || isNaN(lngNum)) {
+          alert('Invalid coordinates detected. Please get your location again.');
+          return;
+        }
+        
+        // Validate coordinate ranges
+        if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+          alert('Invalid coordinate values. Please get your location again.');
+          return;
+        }
+        
+        pickupLocation = address || `Current Location at ${latNum.toFixed(6)}, ${lngNum.toFixed(6)}`;
+        coordinates = { lat: latNum, lng: lngNum };
+        
+      } else if (locationMethod === 'manual') {
+        const manualLocation = document.getElementById('manualPickupLocation').value;
+        
+        if (!manualLocation.trim()) {
+          alert('Please enter a pickup location.');
+          return;
+        }
+        
+        pickupLocation = manualLocation.trim();
+      }
+      
+      if (!pickupLocation) {
+        alert('Please provide a pickup location.');
+        return;
+      }
+      
+      console.log('Final data:', { pickupLocation, coordinates, userNotes });
+      
+      try {
+        // Show loading state
+        const submitButton = document.getElementById('approveSubmitBtn');
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
+        submitButton.disabled = true;
+        
+        const formData = new FormData();
+        formData.append('pickup_location', pickupLocation);
+        if (coordinates) {
+          formData.append('latitude', coordinates.lat.toString());
+          formData.append('longitude', coordinates.lng.toString());
+        }
+        if (userNotes) {
+          formData.append('user_notes', userNotes);
+        }
+        
+        // Log the form data being sent
+        console.log('Form data being sent:');
+        for (let [key, value] of formData.entries()) {
+          console.log(key + ': ' + value);
+        }
+        
+        console.log('Sending request to:', `/pickup/approve/${requestId}`);
+        
+        const response = await fetch(`/pickup/approve/${requestId}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Response error:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Response result:', result);
+        
+        if (result.success) {
+          alert('Pickup request approved successfully! The vendor can now track your location.');
+          closeApproveModal();
+          location.reload();
+        } else {
+          alert('Error: ' + (result.detail || result.message || 'Unknown error occurred'));
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        alert('Error approving request: ' + error.message + '. Please try again.');
+      } finally {
+        // Restore button state
+        const submitButton = document.getElementById('approveSubmitBtn');
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+      }
+    });
+    
+    // Handle reject form submission
+    document.getElementById('rejectForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const requestId = document.getElementById('rejectRequestId').value;
+      const rejectNotes = document.getElementById('rejectNotes').value;
+      
+      try {
+        const formData = new FormData();
+        if (rejectNotes) {
+          formData.append('user_notes', rejectNotes);
+        }
+        
+        const response = await fetch(`/pickup/reject/${requestId}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Pickup request rejected successfully!');
+          closeRejectModal();
+          location.reload(); // Refresh to show updated status
+        } else {
+          alert('Error: ' + result.detail);
+        }
+      } catch (error) {
+        alert('Error rejecting request. Please try again.');
+        console.error('Error:', error);
+      }
+    });
+
+    // Test form submission function
+    async function testFormSubmission() {
+      console.log('Testing form submission...');
+      const requestId = 'test_request_id'; // Replace with a real request ID if available
+      const itemName = 'Test Item';
+
+      if (!requestId) {
+        alert('Please open an approve modal first to get a real request ID.');
+        return;
+      }
+
+      const locationMethodElement = document.querySelector('input[name="locationMethod"][value="map"]');
+      const locationMethod = locationMethodElement ? locationMethodElement.value : 'map'; // Default to map
+
+      const userNotes = 'This is a test note for the vendor.';
+
+      let pickupLocation = '';
+      let coordinates = null;
+
+      if (locationMethod === 'map') {
+        const lat = 28.6139; // Example latitude
+        const lng = 77.2090; // Example longitude
+        const address = 'Test Address, Delhi, India';
+
+        pickupLocation = address;
+        coordinates = { lat: lat, lng: lng };
+      } else if (locationMethod === 'live') {
+        const lat = 28.6139; // Example latitude
+        const lng = 77.2090; // Example longitude
+        const address = 'Test Address, Delhi, India';
+
+        pickupLocation = address;
+        coordinates = { lat: lat, lng: lng };
+      } else if (locationMethod === 'manual') {
+        pickupLocation = 'Test Manual Location, Delhi, India';
+      }
+
+      if (!pickupLocation) {
+        alert('No pickup location data available for testing.');
+        return;
+      }
+
+      try {
+        const submitButton = document.getElementById('approveSubmitBtn');
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+        submitButton.disabled = true;
+
+        const formData = new FormData();
+        formData.append('requestId', requestId);
+        formData.append('pickup_location', pickupLocation);
+        if (coordinates) {
+          formData.append('latitude', coordinates.lat.toString());
+          formData.append('longitude', coordinates.lng.toString());
+        }
+        if (userNotes) {
+          formData.append('user_notes', userNotes);
+        }
+
+        console.log('Form data for test submission:');
+        for (let [key, value] of formData.entries()) {
+          console.log(key + ': ' + value);
+        }
+
+        console.log('Sending test request to:', `/pickup/approve/${requestId}`);
+
+        const response = await fetch(`/pickup/approve/${requestId}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        console.log('Test response status:', response.status);
+        console.log('Test response headers:', response.headers);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Test response error:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Test response result:', result);
+
+        if (result.success) {
+          alert('Test form submission successful! The vendor can now track your location.');
+          // Optionally, you might want to close the modal or reload the page
+          // closeApproveModal(); 
+          // location.reload(); 
+        } else {
+          alert('Error: ' + (result.detail || result.message || 'Unknown error occurred during test'));
+        }
+      } catch (error) {
+        console.error('Test submission error:', error);
+        alert('Error during test form submission: ' + error.message);
+      } finally {
+        const submitButton = document.getElementById('approveSubmitBtn');
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Items for Pickup - Vendor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+:root {
+  --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981; /* New eco-friendly green color */
+  --eco-green-light: #34D399; /* Lighter green variant */
+  --bg-dark: #020617; /* Even darker, more neutral background */
+  --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+  --text-primary: #E2E8F0; /* Slightly softer white */
+  --text-secondary: #64748B; /* Softer gray */
+  --radius: 10px; /* Slightly larger radius */
+  --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+/* Header */
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(10deg) scale(1.1);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-icon {
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--border-color);
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-dark);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+.btn-success {
+  background-image: linear-gradient(to right, var(--eco-green) 0%, var(--eco-green-light) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-disabled {
+  background: #64748B;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+  border: none;
+}
+
+.btn-disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow-md);
+}
+
+/* Main Content */
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title i {
+  color: var(--text-primary);
+  background: rgba(56, 189, 248, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendor-badge {
+  background: var(--eco-green);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 1rem;
+}
+
+/* Table Styles */
+.table-container {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+th {
+  padding: 1.2rem 1rem;
+  text-align: left;
+  color: white;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+tbody tr:hover {
+  background-color: rgba(56, 189, 248, 0.05);
+}
+
+td {
+  padding: 1.2rem 1rem;
+}
+
+.item-id {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.item-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.item-details {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-reported {
+  background: rgba(255, 166, 46, 0.15);
+  color: #FFA62E;
+}
+
+.status-approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--eco-green);
+}
+
+.category-badge {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8B5CF6;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  display: inline-block;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: var(--card-bg);
+  margin: 5% auto;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.close {
+  color: var(--text-secondary);
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.close:hover {
+  color: var(--text-primary);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  background: rgba(15, 23, 42, 0.5);
+  color: var(--text-primary);
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .modal-content {
+    margin: 10% auto;
+    width: 95%;
+    padding: 1.5rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/auth/dashboard/vendor_dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/pickup/vendor/items" class="nav-link active"><i class="fas fa-box"></i> Available Items</a>
+        <a href="/pickup/vendor/requests" class="nav-link"><i class="fas fa-list"></i> My Requests</a>
+      </nav>
+      
+      <div class="user-actions">
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          <i class="fas fa-user"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-box"></i>
+        Available Items for Pickup
+        <span class="vendor-badge">Vendor View</span>
+      </h1>
+    </div>
+    
+    <section class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Item ID</th>
+            <th>Item Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Reported Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>
+              <span class="item-id">{{ (item.id or item._id)[:8] }}</span>
+            </td>
+            <td>
+              <div class="item-name">{{ item.name }}</div>
+              <div class="item-details">
+                Serial: {{ item.serial_number or 'N/A' }}
+                {% if item.price %}
+                <br>Price: Rs {{ "%.2f"|format(item.price) }}
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="category-badge">{{ item.category_name or 'N/A' }}</span>
+            </td>
+            <td>
+              {% if item.price %}
+                Rs {{ "%.2f"|format(item.price) }}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>
+              {{ item.reported_date.strftime('%Y-%m-%d') if item.reported_date else 'N/A' }}
+            </td>
+            <td>
+              {% if item.status == 'DISPOSED' %}
+                <span class="status-badge status-reported" style="background: rgba(244,67,54,0.15); color:#FF6B6B;">
+                  <i class="fas fa-ban"></i> Disposed
+                </span>
+              {% elif item.id in vendor_approved_items %}
+                {% if item.status == 'COLLECTED' %}
+                  <span class="status-badge status-approved">
+                    <i class="fas fa-check"></i> Approved for Pickup
+                  </span>
+                {% else %}
+                  <span class="status-badge status-approved">
+                    <i class="fas fa-cog"></i> {{ item.status.replace('_', ' ').title() }}
+                  </span>
+                {% endif %}
+              {% elif item.id in vendor_pending_items %}
+                <span class="status-badge status-reported">
+                  <i class="fas fa-clock"></i> Request Pending
+                </span>
+              {% else %}
+                <span class="status-badge status-reported">
+                  <i class="fas fa-flag"></i> Available for Pickup
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if item.status == 'DISPOSED' %}
+                <button class="btn btn-disabled" disabled>
+                  <i class="fas fa-ban"></i> Disposed
+                </button>
+              {% elif item.id in vendor_approved_items %}
+                <a href="/pickup/item/{{ item.id }}/details" class="btn btn-primary">
+                  <i class="fas fa-eye"></i> View Details & Location
+                </a>
+              {% elif item.id in vendor_pending_items %}
+                <button class="btn btn-disabled" disabled>
+                  <i class="fas fa-clock"></i> Request Pending
+                </button>
+              {% else %}
+                <button class="btn btn-success" onclick="openPickupModal('{{ item.id }}', '{{ item.name }}')">
+                  <i class="fas fa-handshake"></i> Request Pickup
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Pickup Request Modal -->
+  <div id="pickupModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Request Pickup</h3>
+        <span class="close" onclick="closePickupModal()">&times;</span>
+      </div>
+      <form id="pickupForm">
+        <input type="hidden" id="itemId" name="itemId">
+        <div class="form-group">
+          <label for="vendorNotes">Enter how much you are willing to pay(Should be payed at pickup):</label>
+          <textarea id="vendorNotes" name="vendorNotes" placeholder="Enter amount "></textarea>        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closePickupModal()">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> Send Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+
+    function openPickupModal(itemId, itemName) {
+      document.getElementById('itemId').value = itemId;
+      document.getElementById('pickupModal').style.display = 'block';
+    }
+    
+    function closePickupModal() {
+      document.getElementById('pickupModal').style.display = 'none';
+      document.getElementById('pickupForm').reset();
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('pickupModal');
+      if (event.target === modal) {
+        closePickupModal();
+      }
+    }
+    
+    // Handle form submission
+    document.getElementById('pickupForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const itemId = document.getElementById('itemId').value;
+      const vendorNotes = document.getElementById('vendorNotes').value;
+      
+      try {
+        const formData = new FormData();
+        if (vendorNotes) {
+          formData.append('vendor_notes', vendorNotes);
+        }
+        
+        const response = await fetch(`/pickup/request/${itemId}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Pickup request sent successfully!');
+          closePickupModal();
+          location.reload(); // Refresh to show updated status
+        } else {
+          alert('Error: ' + result.detail);
+        }
+      } catch (error) {
+        alert('Error sending pickup request. Please try again.');
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>

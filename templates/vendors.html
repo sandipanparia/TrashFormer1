@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Management | TrashFormer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+      --primary-dark: #1E88E5;
+      --eco-green: #10B981; /* New eco-friendly green color */
+      --eco-green-light: #34D399; /* Lighter green variant */
+      --bg-dark: #020617; /* Even darker, more neutral background */
+      --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+      --card-bg: #0F172A;
+      --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+      --text-primary: #E2E8F0; /* Slightly softer white */
+      --text-secondary: #64748B; /* Softer gray */
+      --radius: 10px; /* Slightly larger radius */
+      --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* Header */
+    header {
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(10deg) scale(1.1);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Navigation */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+        color: var(--text-primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid var(--border-color);
+    }
+
+    .profile-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px var(--primary-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+      flex: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .page-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .page-title h2 {
+      font-size: 1.8rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .page-title p {
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .card h3 {
+      font-size: 1.3rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Form Styles */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    input, select, textarea {
+      padding: 0.9rem 1.2rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: var(--transition);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .form-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      background: var(--card-bg);
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .table-container:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+    }
+
+    thead {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: white;
+    }
+
+    th {
+      padding: 1.2rem;
+      text-align: left;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    td {
+      padding: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background-color: rgba(56, 189, 248, 0.05);
+    }
+
+    /* Vendor Details */
+    .vendor-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .vendor-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 1.05rem;
+    }
+
+    .vendor-contact {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .vendor-license {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.7rem;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--eco-green);
+      border-radius: 20px;
+      display: inline-block;
+      width: fit-content;
+      font-weight: 500;
+      transition: var(--transition);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .vendor-license:hover {
+      background: var(--eco-green);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .empty-state:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .empty-state i {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .empty-state:hover i {
+      color: var(--primary);
+      transform: scale(1.1);
+    }
+
+    .empty-state h3 {
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-dark);
+      color: var(--text-secondary);
+      padding: 3rem 0 1rem;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+    }
+
+    .footer-section h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--eco-green);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p, .footer-section a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--eco-green);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      color: var(--eco-green);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .header-container {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      
+      .main-nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+      
+      th, td {
+        padding: 1rem 0.8rem;
+        font-size: 0.9rem;
+      }
+      
+      .page-title h2 {
+        font-size: 1.5rem;
+      }
+      
+      .page-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+  <script>
+    async function addVendor(e){
+      e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      
+      // Show loading state
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      submitBtn.disabled = true;
+      
+      try {
+        const data = new FormData(e.target);
+        const res = await fetch('/vendors/new', {method:'POST', body:data});
+        
+        if ((await res.json()).ok) {
+          // Show success message
+          const successMsg = document.createElement('div');
+          successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Vendor added successfully!';
+          successMsg.style.background = 'rgba(16, 185, 129, 0.1)';
+          successMsg.style.color = '#10B981';
+          successMsg.style.padding = '1rem';
+          successMsg.style.borderRadius = 'var(--radius)';
+          successMsg.style.marginBottom = '1.5rem';
+          successMsg.style.display = 'flex';
+          successMsg.style.alignItems = 'center';
+          successMsg.style.gap = '0.5rem';
+          successMsg.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+          
+          e.target.parentNode.insertBefore(successMsg, e.target);
+          
+          // Reset form
+          e.target.reset();
+          
+          // Reload after a short delay
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding vendor. Please try again.');
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+    
+    // Add active class to current page navigation
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.createElement('canvas');
+      canvas.id = 'particle-canvas';
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      const particles = [];
+      const particleCount = 150;
+      
+      // Particle colors including green
+      const colors = [
+        'rgba(56, 189, 248, 0.5)', // blue
+        'rgba(16, 185, 129, 0.5)', // green
+        'rgba(96, 165, 250, 0.5)', // light blue
+        'rgba(52, 211, 153, 0.5)'  // light green
+      ];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2.5 + 0.5;
+          this.speedX = Math.random() * 1 - 0.5;
+          this.speedY = Math.random() * 1 - 0.5;
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          
+          if (this.x > canvas.width || this.x < 0) {
+            this.speedX = -this.speedX;
+          }
+          if (this.y > canvas.height || this.y < 0) {
+            this.speedY = -this.speedY;
+          }
+        }
+        
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+      
+      function init() {
+        particlesArray = [];
+        const numberOfParticles = (canvas.height * canvas.width) / 9000;
+        
+        for (let i = 0; i < numberOfParticles; i++) {
+          particlesArray.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particlesArray.length; i++) {
+          particlesArray[i].update();
+          particlesArray[i].draw();
+          
+          // Connect particles with lines
+          for (let j = i; j < particlesArray.length; j++) {
+            const dx = particlesArray[i].x - particlesArray[j].x;
+            const dy = particlesArray[i].y - particlesArray[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+              ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      }
+      
+      init();
+      animate();
+
+      const currentPage = window.location.pathname;
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/items/" class="nav-link"><i class="fas fa-laptop"></i> Items</a>
+        <a href="/schedules/" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a>
+        <a href="/vendors/" class="nav-link active"><i class="fas fa-store"></i> Vendors</a>
+        <a href="/reports/" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="/analytics/" class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+      </nav>
+      
+      <div class="user-actions">
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          J
+        </a>
+        <a href="/auth/logout" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div class="page-header">
+      <div class="page-title">
+        <div class="page-icon">
+          <i class="fas fa-store"></i>
+        </div>
+        <div>
+          <h2>Vendor Management</h2>
+          <p>Manage your e-waste recycling partners and vendors</p>
+        </div>
+      </div>
+      <div class="page-actions">
+        <a href="/vendors/export" class="btn btn-secondary">
+          <i class="fas fa-download"></i> Export Data
+        </a>
+      </div>
+    </div>
+    
+    <section class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-plus-circle"></i>
+        </div>
+        <h3>Add New Vendor</h3>
+      </div>
+      
+      <form onsubmit="addVendor(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Vendor Name</label>
+            <input type="text" id="name" name="name" placeholder="Company Name" required />
+          </div>
+          
+          <div class="form-group">
+            <label for="contact_person">Contact Person</label>
+            <input type="text" id="contact_person" name="contact_person" placeholder="Full Name" />
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" />
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="contact@company.com" />
+          </div>
+          
+          <div class="form-group">
+            <label for="license_no">License Number</label>
+            <input type="text" id="license_no" name="license_no" placeholder="License #" />
+          </div>
+          
+          <div class="form-group">
+            <label for="specialization">Specialization</label>
+            <select id="specialization" name="specialization">
+              <option value="">Select Specialization</option>
+              <option value="electronics">Consumer Electronics</option>
+              <option value="batteries">Batteries</option>
+              <option value="appliances">Large Appliances</option>
+              <option value="computers">Computers & IT Equipment</option>
+              <option value="general">General E-Waste</option>
+            </select>
+          </div>
+          
+          <div class="form-group form-full">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Full Address" />
+          </div>
+          
+          <div class="form-full">
+            <button class="btn btn-primary" type="submit">
+              <i class="fas fa-save"></i> Save Vendor
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+    
+    <section class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-store"></i>
+        </div>
+        <h3>Registered Vendors</h3>
+      </div>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Vendor Details</th>
+              <th>Contact Information</th>
+              <th>Specialization</th>
+              <th>License</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="vendor-details">
+                  <div class="vendor-name">GreenTech Recycling</div>
+                  <div class="vendor-contact">123 Eco Street, Haldia</div>
+                </div>
+              </td>
+              <td>
+                <div class="vendor-details">
+                  <div class="vendor-contact">John Smith</div>
+                  <div class="vendor-contact"><i class="fas fa-phone"></i> +91 9876543210</div>
+                  <div class="vendor-contact"><i class="fas fa-envelope"></i> john@greentech.com</div>
+                </div>
+              </td>
+              <td>
+                <span class="vendor-license">Consumer Electronics</span>
+              </td>
+              <td>
+                <span class="vendor-license">REC-2023-1245</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="vendor-details">
+                  <div class="vendor-name">EcoDispose Solutions</div>
+                  <div class="vendor-contact">456 Green Avenue, Kolkata</div>
+                </div>
+              </td>
+              <td>
+                <div class="vendor-details">
+                  <div class="vendor-contact">Sarah Johnson</div>
+                  <div class="vendor-contact"><i class="fas fa-phone"></i> +91 8765432109</div>
+                  <div class="vendor-contact"><i class="fas fa-envelope"></i> sarah@ecodispose.com</div>
+                </div>
+              </td>
+              <td>
+                <span class="vendor-license">Batteries</span>
+              </td>
+              <td>
+                <span class="vendor-license">REC-2023-1678</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>TrashFormer</h3>
+        <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+        <div class="social-links">
+          <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+          <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+          <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+          <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul class="footer-links" style="list-style: none;">
+          <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+          <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+          <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <ul class="footer-links" style="list-style: none;">
+          <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+          <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+          <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

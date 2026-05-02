@@ -1,0 +1,1525 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Items @ TrashFormer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+      --primary-dark: #1E88E5;
+      --eco-green: #10B981; /* New eco-friendly green color */
+      --eco-green-light: #34D399; /* Lighter green variant */
+      --bg-dark: #020617; /* Even darker, more neutral background */
+      --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+      --card-bg: #0F172A;
+      --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+      --text-primary: #E2E8F0; /* Slightly softer white */
+      --text-secondary: #64748B; /* Softer gray */
+      --radius: 10px; /* Slightly larger radius */
+      --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* Header */
+    header {
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(10deg) scale(1.1);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Navigation */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+        color: var(--text-primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid var(--border-color);
+    }
+
+    .profile-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px var(--primary-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: #EF4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-color: #EF4444;
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+      flex: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-primary);
+    }
+
+    .page-title i {
+      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    /* Search Card */
+    .search-card {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .search-card:hover {
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .search-form {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 0.9rem 1.2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: var(--transition);
+      background: rgba(2, 6, 23, 0.3);
+      color: var(--text-primary);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* Table Styles */
+    .table-container {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .table-container:hover {
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+    }
+
+    th {
+      padding: 1.2rem 1rem;
+      text-align: left;
+      color: white;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    tbody tr:hover {
+      background-color: rgba(56, 189, 248, 0.05);
+    }
+
+    td {
+      padding: 1.2rem 1rem;
+    }
+
+    .item-id {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .item-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .item-details {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-reported {
+      background: rgba(255, 166, 46, 0.15);
+      color: #d18a0c;
+    }
+
+    .status-processing {
+      background: rgba(78, 205, 196, 0.15);
+      color: #2a9b93;
+    }
+
+    .status-recycled {
+      background: rgba(80, 200, 120, 0.15);
+      color: #3a9d5d;
+    }
+
+    .status-disposed {
+      background: rgba(108, 117, 125, 0.15);
+      color: #5a6268;
+    }
+
+    .qr-code {
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: var(--transition);
+    }
+
+    .qr-code:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .not-owner-indicator {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-dark);
+      color: var(--text-secondary);
+      padding: 3rem 1.5rem 1rem;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+
+    .footer-section h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--eco-green);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p, .footer-section a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--eco-green);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      color: var(--eco-green);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .main-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
+
+      .search-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .table-container {
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+        <a href="/items/" class="nav-link active"><i class="fas fa-laptop"></i> Items</a>
+        
+        <a href="/schedules/" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a><!----
+        <a href="/vendors/" class="nav-link"><i class="fas fa-store"></i> Vendors</a>-->
+      </nav>
+      
+      <div class="user-actions">
+        
+        <a href="/auth/login" class="btn btn-secondary">Sign In</a>
+        <a href="/auth/signup" class="btn btn-primary">Sign Up</a>
+        
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <div class="page-header">
+      <h1 class="page-title animate">
+        <i class="fas fa-laptop"></i>
+        Tracked Items
+      </h1>
+      
+        <a href="/items/new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Report New Item
+        </a>
+      
+    </div>
+    
+    <section class="search-card animate">
+      <form method="get" action="/items/" class="search-form">
+        <input type="text" name="q" class="search-input" placeholder="Search by Item ID" value="" />
+        <button class="btn btn-primary" type="submit">
+          <i class="fas fa-search"></i> Search
+        </button>
+        
+      </form>
+    </section>
+    
+    <section class="table-container animate">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name & Details</th>
+            <th>Status</th>
+            <th>QR Code</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr class="animate" style="animation-delay: 0.1s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a67fa4</span>
+              
+            </td>
+            <td>
+              <div class="item-name">kkjdfdojhgfu</div>
+              <div class="item-details">
+                <div>Date: 2025-08-21 02:08:36.354000</div>
+                <div>Serial: 8587585</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.2s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a7622d</span>
+              
+            </td>
+            <td>
+              <div class="item-name">jdjd</div>
+              <div class="item-details">
+                <div>Date: 2025-08-21 18:15:09.561000</div>
+                <div>Serial: 8738383</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">COLLECTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.30000000000000004s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a77707</span>
+              
+            </td>
+            <td>
+              <div class="item-name">new</div>
+              <div class="item-details">
+                <div>Date: 2025-08-21 19:44:07.146000</div>
+                <div>Serial: 99</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">DISPOSED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.4s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a7ed4c</span>
+              
+            </td>
+            <td>
+              <div class="item-name">xxxxx</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 04:08:44.472000</div>
+                <div>Serial: 2</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">IN_STORAGE</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.5s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a7f977</span>
+              
+            </td>
+            <td>
+              <div class="item-name">hp laptop</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 05:00:39.192000</div>
+                <div>Serial: 64156</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">IN_STORAGE</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.6000000000000001s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a8840a</span>
+              
+            </td>
+            <td>
+              <div class="item-name">vvv</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 14:51:54.591000</div>
+                <div>Serial: vvv</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">IN_STORAGE</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.7000000000000001s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a8a146</span>
+              
+            </td>
+            <td>
+              <div class="item-name">hp laptop</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 16:56:38.449000</div>
+                <div>Serial: 75744</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">COLLECTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.8s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a8aa1a</span>
+              
+            </td>
+            <td>
+              <div class="item-name">kitty</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 17:34:18.662000</div>
+                <div>Serial: 67524</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">IN_STORAGE</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 0.9s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a8ba55</span>
+              
+            </td>
+            <td>
+              <div class="item-name">hp old</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 18:43:33.640000</div>
+                <div>Serial: 876874</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.0s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a8ba7b</span>
+              
+            </td>
+            <td>
+              <div class="item-name">hp new</div>
+              <div class="item-details">
+                <div>Date: 2025-08-22 18:44:11.730000</div>
+                <div>Serial: 7684</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.1s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a90b18</span>
+              
+            </td>
+            <td>
+              <div class="item-name">uhrrur</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 00:28:08.898000</div>
+                <div>Serial: 5436</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.2000000000000002s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a92092</span>
+              
+            </td>
+            <td>
+              <div class="item-name">hhhh</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 01:59:46.997000</div>
+                <div>Serial: h</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.3s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a92407</span>
+              
+            </td>
+            <td>
+              <div class="item-name">six9</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 02:14:31.181000</div>
+                <div>Serial: 9088</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">COLLECTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.4000000000000001s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a941aa</span>
+              
+            </td>
+            <td>
+              <div class="item-name">Acer Laptop</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 04:20:58.688000</div>
+                <div>Serial: s334D23</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.5s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a94223</span>
+              
+            </td>
+            <td>
+              <div class="item-name">HDD</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 04:22:59.243000</div>
+                <div>Serial: er546s78</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.6s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a942b8</span>
+              
+            </td>
+            <td>
+              <div class="item-name">LivGuard Battery</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 04:25:28.744000</div>
+                <div>Serial: F444d34</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.7000000000000002s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a942eb</span>
+              
+            </td>
+            <td>
+              <div class="item-name">iphone</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 04:26:19.850000</div>
+                <div>Serial: 789</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.8s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a94321</span>
+              
+            </td>
+            <td>
+              <div class="item-name">dell</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 04:27:13.331000</div>
+                <div>Serial: 535345</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 1.9000000000000001s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a96467</span>
+              
+            </td>
+            <td>
+              <div class="item-name">mouse</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 06:49:11.091000</div>
+                <div>Serial: 334</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 2.0s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a967ae</span>
+              
+            </td>
+            <td>
+              <div class="item-name">delllllllllll</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 07:03:10.811000</div>
+                <div>Serial: 6146</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">REPORTED</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+          <tr class="animate" style="animation-delay: 2.1s">
+            <td>
+              
+              
+              
+                <span class="item-id">68a9682c</span>
+              
+            </td>
+            <td>
+              <div class="item-name">protoooo</div>
+              <div class="item-details">
+                <div>Date: 2025-08-23 07:05:16.322000</div>
+                <div>Serial: 785764</div>
+              </div>
+            </td>
+            <td>
+              
+                <span class="status-badge">IN_STORAGE</span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Restricted
+                </span>
+              
+            </td>
+            <td>
+              
+                <span class="not-owner-indicator">
+                  <i class="fas fa-lock"></i> Not your item
+                </span>
+              
+            </td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+
+        // Add confirmation for delete actions
+        const deleteForms = document.querySelectorAll('form[action*="/delete"]');
+        
+        deleteForms.forEach(form => {
+          form.addEventListener('submit', function(e) {
+            if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+              e.preventDefault();
+            }
+          });
+        });
+    });
+
+    async function deleteItem(itemId, buttonEl) {
+      try {
+        if (!confirm('Delete this item? This cannot be undone.')) return;
+        
+        const row = buttonEl && buttonEl.closest('tr');
+        if (buttonEl) {
+          buttonEl.disabled = true;
+          buttonEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        }
+        
+        const resp = await fetch(`/items/delete/${itemId}`, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error(text || 'Failed to delete');
+        }
+        const data = await resp.json().catch(() => ({ success: true }));
+        if (data && data.success === false) {
+          throw new Error(data.message || 'Failed to delete');
+        }
+        
+        if (row) {
+          row.style.transition = 'opacity 0.4s ease, transform 0.4s ease, height 0.4s ease, padding 0.4s ease';
+          row.style.opacity = '0';
+          row.style.transform = 'translateX(32px)';
+          setTimeout(() => {
+            row.remove();
+          }, 420);
+        }
+      } catch (err) {
+        alert('Could not delete item. ' + (err && err.message ? err.message : ''));
+      } finally {
+        if (buttonEl) {
+          buttonEl.disabled = false;
+          buttonEl.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

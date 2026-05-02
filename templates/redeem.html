@@ -1,0 +1,900 @@
+
+
+
+
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redeem Rewards - TrashFormer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+:root {
+  --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+  --primary-dark: #1E88E5;
+  --eco-green: #10B981; /* New eco-friendly green color */
+  --eco-green-light: #34D399; /* Lighter green variant */
+  --bg-dark: #020617; /* Even darker, more neutral background */
+  --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+  --card-bg: #0F172A;
+  --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+  --text-primary: #E2E8F0; /* Slightly softer white */
+  --text-secondary: #64748B; /* Softer gray */
+  --radius: 10px; /* Slightly larger radius */
+  --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.3;
+}
+
+/* Header */
+header {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(10deg) scale(1.1);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-icon {
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--border-color);
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-dark);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+.btn-success {
+  background: var(--eco-green);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+  background: #0da271;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Main Content */
+main {
+  padding: 2.5rem 0;
+  flex: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title i {
+  color: var(--primary);
+  background: rgba(56, 189, 248, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Token Balance */
+.token-balance {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.token-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--eco-green);
+  margin-bottom: 0.5rem;
+}
+
+.token-label {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Rewards Grid */
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.reward-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+  box-shadow: var(--shadow-lg);
+}
+
+.reward-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  border-color: var(--eco-green);
+}
+
+.reward-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.reward-content {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.reward-description {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.reward-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reward-price {
+  font-weight: 600;
+  color: var(--eco-green);
+  font-size: 1.1rem;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  overflow-y: auto;
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  margin: 5% auto;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.close {
+  color: var(--text-secondary);
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.close:hover {
+  color: var(--text-primary);
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-text {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.redeem-code {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* Footer */
+.site-footer {
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  padding: 3rem 1.5rem 1rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.footer-section h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--eco-green);
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.footer-section p, .footer-section a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1.8;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-section a:hover {
+  color: var(--eco-green);
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-links a {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.social-links a:hover {
+  color: var(--eco-green);
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .rewards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    margin: 10% auto;
+    width: 95%;
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    margin: 5% auto;
+    padding: 1rem;
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/auth/dashboard/user_dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/items/" class="nav-link"><i class="fas fa-box"></i> My Items</a>
+        <a href="/pickup/user/requests" class="nav-link"><i class="fas fa-handshake"></i> Pickup Requests</a>
+        <a href="/redeem" class="nav-link active"><i class="fas fa-gift"></i> Redeem</a>
+      </nav>
+      
+      <div class="user-actions">
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          {{ (current_user.full_name or current_user.username)[:1] | upper }}
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-gift"></i>
+        Redeem Rewards
+      </h1>
+    </div>
+    
+    <div class="token-balance">
+      <div class="token-amount">1,250</div>
+      <div class="token-label">Eco Tokens Available</div>
+    </div>
+    
+    <div class="rewards-grid">
+      <!-- Food Coupons -->
+      <div class="reward-card">
+        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Food Coupon" class="reward-image">
+        <div class="reward-content">
+          <h3 class="reward-title">Food Delivery Coupon</h3>
+          <p class="reward-description">Get 20% off on your next food delivery order from popular restaurants.</p>
+          <div class="reward-footer">
+            <div class="reward-price">150 Tokens</div>
+            <button class="btn btn-primary" onclick="openRedeemModal('food')">Redeem Now</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Coffee Coupon -->
+      <div class="reward-card">
+        <img src="https://images.unsplash.com/photo-1550591635-3f7168e8d7db?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Coffee Coupon" class="reward-image">
+        <div class="reward-content">
+          <h3 class="reward-title">Free Coffee</h3>
+          <p class="reward-description">Enjoy a free coffee at any participating coffee shop nationwide.</p>
+          <div class="reward-footer">
+            <div class="reward-price">100 Tokens</div>
+            <button class="btn btn-primary" onclick="openRedeemModal('coffee')">Redeem Now</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Shopping Coupon -->
+      <div class="reward-card">
+        <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Shopping Coupon" class="reward-image">
+        <div class="reward-content">
+          <h3 class="reward-title">Shopping Discount</h3>
+          <p class="reward-description">Get 15% off on your next purchase from our partner online stores.</p>
+          <div class="reward-footer">
+            <div class="reward-price">200 Tokens</div>
+            <button class="btn btn-primary" onclick="openRedeemModal('shopping')">Redeem Now</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Plant a Tree -->
+      <div class="reward-card">
+        <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Plant a Tree" class="reward-image">
+        <div class="reward-content">
+          <h3 class="reward-title">Plant a Tree</h3>
+          <p class="reward-description">Contribute to reforestation efforts by planting a tree in your name.</p>
+          <div class="reward-footer">
+            <div class="reward-price">300 Tokens</div>
+            <button class="btn btn-success" onclick="openPlantTreeModal()">Plant Now</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Streaming Service -->
+      <div class="reward-card">
+        <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Streaming Service" class="reward-image">
+        <div class="reward-content">
+          <h3 class="reward-title">Streaming Subscription</h3>
+          <p class="reward-description">Get one month free subscription to popular streaming services.</p>
+          <div class="reward-footer">
+            <div class="reward-price">250 Tokens</div>
+            <button class="btn btn-primary" onclick="openRedeemModal('streaming')">Redeem Now</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Eco Product -->
+      <div class="reward-card">
+        <img src="https://images.unsplash.com/photo-1595341888016-a392ef81b7de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Eco Product" class="reward-image">
+        <div class="reward-content">
+          <h3 class="reward-title">Eco-friendly Product</h3>
+          <p class="reward-description">Get a discount on selected eco-friendly products from our partners.</p>
+          <div class="reward-footer">
+            <div class="reward-price">350 Tokens</div>
+            <button class="btn btn-primary" onclick="openRedeemModal('ecoproduct')">Redeem Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Redeem Modal -->
+  <div id="redeemModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Coupon Redeemed!</h3>
+        <span class="close" onclick="closeRedeemModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p class="modal-text">Congratulations! Your coupon has been successfully redeemed. Use this code at checkout:</p>
+        <div class="redeem-code" id="couponCode">TRASH25OFF</div>
+        <p class="modal-text">Your remaining token balance: <strong id="remainingTokens">1,100</strong></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeRedeemModal()">Close</button>
+        <button class="btn btn-primary" onclick="copyCode()">
+          <i class="fas fa-copy"></i> Copy Code
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plant Tree Modal -->
+  <div id="plantTreeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Tree Planted Successfully!</h3>
+        <span class="close" onclick="closePlantTreeModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p class="modal-text">Thank you for contributing to reforestation efforts! A tree will be planted in your name.</p>
+        <div class="redeem-code">TREE2023-789X</div>
+        <p class="modal-text">Your tree planting certificate will be emailed to you. Your remaining token balance: <strong id="treeRemainingTokens">950</strong></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-success" onclick="closePlantTreeModal()">
+          <i class="fas fa-check"></i> Thank You!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+            <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Haldia, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = rgba(255, 255, 255, ${0.1 - distance/1000});
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+
+    // Redeem Modal Functions
+    function openRedeemModal(type) {
+      const modal = document.getElementById('redeemModal');
+      const codeElement = document.getElementById('couponCode');
+      const tokensElement = document.getElementById('remainingTokens');
+      
+      // Generate different codes based on type
+      const codes = {
+        food: 'FOOD20OFF',
+        coffee: 'FREECOFFEE',
+        shopping: 'SHOP15NOW',
+        streaming: 'STREAMFREE',
+        ecoproduct: 'ECOFRIEND25'
+      };
+      
+      const tokenCosts = {
+        food: 150,
+        coffee: 100,
+        shopping: 200,
+        streaming: 250,
+        ecoproduct: 350
+      };
+      
+      codeElement.textContent = codes[type] || 'TRASH25OFF';
+      tokensElement.textContent = (1250 - tokenCosts[type]).toLocaleString();
+      
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeRedeemModal() {
+      document.getElementById('redeemModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    function openPlantTreeModal() {
+      document.getElementById('plantTreeModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePlantTreeModal() {
+      document.getElementById('plantTreeModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    function copyCode() {
+      const code = document.getElementById('couponCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Coupon code copied to clipboard!');
+      });
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const redeemModal = document.getElementById('redeemModal');
+      const plantTreeModal = document.getElementById('plantTreeModal');
+      
+      if (event.target === redeemModal) {
+        closeRedeemModal();
+      }
+      if (event.target === plantTreeModal) {
+        closePlantTreeModal();
+      }
+    }
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeRedeemModal();
+        closePlantTreeModal();
+      }
+    });
+  </script>
+</body>
+</html>

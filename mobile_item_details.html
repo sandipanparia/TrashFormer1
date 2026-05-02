@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details - Mobile</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; 
+            padding: 20px; 
+            background: #f0f2f5;
+            color: #1a1a1a;
+        }
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 24px; 
+            padding-bottom: 16px; 
+            border-bottom: 2px solid #e1e5e9;
+        }
+        .header h1 { 
+            margin: 0; 
+            color: #1a73e8; 
+            font-size: 28px;
+        }
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 12px 0; 
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .label { 
+            font-weight: 600; 
+            color: #5f6368; 
+            min-width: 120px;
+        }
+        .value { 
+            color: #202124; 
+            text-align: right;
+            flex: 1;
+        }
+        .status { 
+            background: #e8f5e8; 
+            color: #0f5132; 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 24px; 
+            padding-top: 16px; 
+            border-top: 1px solid #e1e5e9; 
+            color: #5f6368; 
+            font-size: 12px;
+        }
+        .test-button {
+            background: #1a73e8;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Item Details</h1>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">📝 Name:</span>
+            <span class="value">kkjdfdojhgfu</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">🆔 ID:</span>
+            <span class="value">#68a67fa4</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">📊 Status:</span>
+            <span class="value"><span class="status">Reported</span></span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">🏷️ Category:</span>
+            <span class="value">Batteries</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">🏢 Department:</span>
+            <span class="value">Finance Department</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">📊 Serial:</span>
+            <span class="value">8587585</span>
+        </div>
+        
+                <div class="info-row">
+          <span class="label">⚖️ Weight:</span>
+          <span class="value">44.0 kg</span>
+        </div>
+        
+        <div class="info-row">
+          <span class="label">💰 Price:</span>
+          <span class="value">$150.00</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">📝 Notes:</span>
+            <span class="value">lol</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">✅ Reported:</span>
+            <span class="value">2024-01-27</span>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="test-button" onclick="testConnection()">Test Server Connection</button>
+        </div>
+        
+        <div class="footer">
+            📱 Mobile Item Details • Test Page
+        </div>
+    </div>
+    
+    <script>
+        function testConnection() {
+            const urls = [
+                'http://10.24.226.72:8000/items/test/mobile-connect',
+                'http://10.24.226.72:8000/items/qr/68a67fa4fbc611459d7c8308'
+            ];
+            
+            urls.forEach((url, index) => {
+                fetch(url)
+                    .then(response => {
+                        alert(`✅ URL ${index + 1} works! Status: ${response.status}`);
+                    })
+                    .catch(error => {
+                        alert(`❌ URL ${index + 1} failed: ${error.message}`);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

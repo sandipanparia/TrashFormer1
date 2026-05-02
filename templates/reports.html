@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrashFormer - Interactive E-Waste Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    :root {
+      --primary: #38BDF8;
+      --primary-dark: #1E88E5;
+      --eco-green: #10B981;
+      --eco-green-light: #34D399;
+      --bg-dark: #020617;
+      --bg-light: #0F172A;
+      --card-bg: #0F172A;
+      --border-color: rgba(56, 189, 248, 0.2);
+      --text-primary: #E2E8F0;
+      --text-secondary: #64748B;
+      --radius: 10px;
+      --transition: all 0.3s ease-in-out;
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* Header */
+    header {
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(10deg) scale(1.1);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Navigation */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+      color: var(--text-primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      transition: var(--transition);
+      border: 2px solid var(--border-color);
+    }
+
+    .profile-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px var(--primary-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+      flex: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Enhanced Full-Screen News Section */
+    .news-section {
+      margin: 3rem 0;
+      padding: 2rem 0;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    .news-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      color: var(--eco-green);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      padding-left: 1.5rem;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100vw;
+      height: 400px;
+      margin-left: calc(-50vw + 50%);
+      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    .carousel-track {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      animation: scroll-news 40s linear infinite;
+      transform-style: preserve-3d;
+    }
+
+    .carousel-track:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes scroll-news {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .news-card {
+      flex: 0 0 350px;
+      height: 350px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      margin: 25px 15px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      transform-style: preserve-3d;
+      position: relative;
+    }
+
+    .news-card:hover {
+      transform: translateY(-10px) scale(1.05) rotateY(5deg);
+      border-color: var(--eco-green);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Enhanced 3D effect with staggered positioning */
+    .news-card:nth-child(3n+1) {
+      transform: translateZ(60px) rotateY(-5deg);
+    }
+
+    .news-card:nth-child(3n+2) {
+      transform: translateZ(30px);
+    }
+
+    .news-card:nth-child(3n+3) {
+      transform: translateZ(0px) rotateY(5deg);
+    }
+
+    .news-card-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .news-card:hover .news-card-image {
+      transform: scale(1.1);
+    }
+
+    .news-card-content {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      transform: translateZ(20px);
+    }
+
+    .news-card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .news-card-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      flex: 1;
+    }
+
+    .news-card-link {
+      color: var(--eco-green);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+
+    .news-card-link:hover {
+      color: var(--eco-green-light);
+      transform: translateX(5px);
+    }
+
+    /* Heat Map Section */
+    .heat-map-section {
+      margin: 3rem 0;
+      padding: 2rem;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .heat-map-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+    }
+
+    /* Leaflet Map Customization */
+    #map {
+      width: 100%;
+      height: 500px;
+      border-radius: var(--radius);
+      z-index: 1;
+    }
+
+    .leaflet-container {
+      background: var(--bg-light);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .leaflet-popup-tip {
+      background: var(--card-bg);
+    }
+
+    .leaflet-control-zoom a {
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .leaflet-control-zoom a:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .leaflet-control-attribution {
+      background: rgba(15, 23, 42, 0.8) !important;
+      color: var(--text-secondary);
+    }
+
+    .leaflet-control-attribution a {
+      color: var(--primary);
+    }
+
+    /* Heatmap Legend */
+    .map-legend {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--card-bg);
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-md);
+    }
+
+    .legend-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    .legend-scale {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+    }
+
+    .legend-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Learning Center */
+    .learning-section {
+      margin: 3rem 0;
+      padding: 2rem;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .learning-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--eco-green);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+    }
+
+    .waste-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .waste-category {
+      background: var(--bg-light);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transform: translateZ(0);
+    }
+
+    .waste-category:hover {
+      transform: translateY(-5px) translateZ(20px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .waste-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    .waste-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .waste-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Detail Modal */
+    .detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      border-radius: var(--radius);
+      padding: 2rem;
+      overflow-y: auto;
+      position: relative;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content.active {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .close-modal:hover {
+      color: var(--text-primary);
+    }
+
+    .modal-header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    .modal-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.8rem;
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .modal-body h3 {
+      color: var(--text-primary);
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    .modal-body ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-body li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-dark);
+      color: var(--text-secondary);
+      padding: 3rem 1.5rem 1rem;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+
+    .footer-section h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--eco-green);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p, .footer-section a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--eco-green);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      color: var(--eco-green);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.7;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.7;
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .main-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .news-card {
+        flex: 0 0 280px;
+        height: 320px;
+        margin: 40px 15px;
+      }
+      
+      .map-legend {
+        top: 10px;
+        right: 10px;
+        padding: 0.75rem;
+      }
+      
+      .legend-title {
+        font-size: 0.8rem;
+      }
+      
+      .news-header {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/items/" class="nav-link"><i class="fas fa-laptop"></i> Items</a>
+        <a href="/schedules/" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedules</a><!----
+        <a href="/vendors/" class="nav-link"><i class="fas fa-store"></i> Vendors</a>-->
+        <a href="/reports/" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="/analytics/" class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+      </nav>
+      
+      <div class="user-actions">
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          <i class="fas fa-user"></i>
+        </a>
+        <a href="/auth/logout" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <!-- Enhanced Full-Screen News Section -->
+    <section class="news-section">
+      <div class="news-header">
+        <i class="fas fa-newspaper"></i><h3>Latest E-Waste News</h3>
+      </div>
+      <div class="carousel-container" id="carousel-container">
+        <div class="carousel-track" id="carousel-track">
+          <!-- News cards will be added dynamically -->
+        </div>
+      </div>
+    </section>
+    
+    <!-- Heat Map Section -->
+    <section class="heat-map-section">
+      <div class="heat-map-header">
+        <i class="fas fa-map-marked-alt"></i><h3>India E-Waste Recycling Heat Map</h3>
+      </div>
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="legend-title">E-Waste Generation (tons/year)</div>
+        <div class="legend-scale">
+          <div class="legend-item">
+            <div class="legend-color" style="background: #25B4A7;"></div>
+            <span class="legend-label">Low (10k-30k)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #30C680;"></div>
+            <span class="legend-label">Medium (30k-50k)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #84D956;"></div>
+            <span class="legend-label">High (50k-70k)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #FEF041;"></div>
+            <span class="legend-label">Very High (70k-100k)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #FEC807;"></div>
+            <span class="legend-label">Critical (100k-150k)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #FE8F13;"></div>
+            <span class="legend-label">Extreme (150k-200k)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #FE5013;"></div>
+            <span class="legend-label">Maximum (200k+)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Learning Center Section -->
+    <section class="learning-section">
+      <div class="learning-header">
+        <i class="fas fa-graduation-cap"></i><h3>E-Waste Learning Center</h3>
+      </div>
+      <div class="waste-categories">
+        <div class="waste-category" data-category="mobile">
+          <div class="waste-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h4 class="waste-title">Mobile Devices</h4>
+          <p class="waste-desc">Learn how to properly recycle smartphones, tablets, and accessories.</p>
+          <button class="btn btn-primary">Learn More</button>
+        </div>
+        
+        <div class="waste-category" data-category="computers">
+          <div class="waste-icon">
+            <i class="fas fa-laptop"></i>
+          </div>
+          <h4 class="waste-title">Computers & Laptops</h4>
+          <p class="waste-desc">Proper disposal methods for computers, laptops, and peripherals.</p>
+          <button class="btn btn-primary">Learn More</button>
+        </div>
+        
+        <div class="waste-category" data-category="cables">
+          <div class="waste-icon">
+            <i class="fas fa-plug"></i>
+          </div>
+          <h4 class="waste-title">Cables & Wires</h4>
+          <p class="waste-desc">How to recycle various types of electronic cables and wiring.</p>
+          <button class="btn btn-primary">Learn More</button>
+        </div>
+        
+        <div class="waste-category" data-category="components">
+          <div class="waste-icon">
+            <i class="fas fa-microchip"></i>
+          </div>
+          <h4 class="waste-title">Electronic Components</h4>
+          <p class="waste-desc">Recycling guidance for circuit boards, chips, and other components.</p>
+          <button class="btn btn-primary">Learn More</button>
+        </div>
+        
+        <div class="waste-category" data-category="graphics">
+          <div class="waste-icon">
+            <i class="fas fa-desktop"></i>
+          </div>
+          <h4 class="waste-title">Graphics Cards</h4>
+          <p class="waste-desc">Special handling for GPU cards and related components.</p>
+          <button class="btn btn-primary">Learn More</button>
+        </div>
+        
+        <div class="waste-category" data-category="batteries">
+          <div class="waste-icon">
+            <i class="fas fa-battery-full"></i>
+          </div>
+          <h4 class="waste-title">Batteries</h4>
+          <p class="waste-desc">Safe disposal methods for different types of batteries.</p>
+          <button class="btn btn-primary">Learn More</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Detail Modal -->
+  <div class="detail-modal" id="detail-modal">
+    <div class="modal-content" id="modal-content">
+      <button class="close-modal" id="close-modal">&times;</button>
+      <div class="modal-header">
+        <div class="modal-icon" id="modal-icon"></div>
+        <h2 class="modal-title" id="modal-title">Category Title</h2>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Content will be loaded dynamically -->
+      </div>
+    </div>
+  </div>
+  
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/items/"><i class="fas fa-laptop"></i> Items</a></li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+            <li><a href="/reports/"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Enhanced particle animation with green particles
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      let particlesArray = [];
+
+      // Particle colors including green
+      const colors = [
+        'rgba(56, 189, 248, 0.5)', // blue
+        'rgba(16, 185, 129, 0.5)', // green
+        'rgba(96, 165, 250, 0.5)', // light blue
+        'rgba(52, 211, 153, 0.5)'  // light green
+      ];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2.5 + 0.5;
+          this.speedX = Math.random() * 1 - 0.5;
+          this.speedY = Math.random() * 1 - 0.5;
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          
+          if (this.x > canvas.width || this.x < 0) {
+            this.speedX = -this.speedX;
+          }
+          if (this.y > canvas.height || this.y < 0) {
+            this.speedY = -this.speedY;
+          }
+        }
+        
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        particlesArray = [];
+        const numberOfParticles = (canvas.height * canvas.width) / 9000;
+        
+        for (let i = 0; i < numberOfParticles; i++) {
+          particlesArray.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particlesArray.length; i++) {
+          particlesArray[i].update();
+          particlesArray[i].draw();
+          
+          // Connect particles with lines
+          for (let j = i; j < particlesArray.length; j++) {
+            const dx = particlesArray[i].x - particlesArray[j].x;
+            const dy = particlesArray[i].y - particlesArray[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+              ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      }
+      
+      window.addEventListener('resize', () => {
+          canvas.width = innerWidth;
+          canvas.height = innerHeight;
+          init();
+      });
+
+      init();
+      animate();
+
+      // Initialize India Map with Leaflet
+      function initIndiaMap() {
+        // Create map centered on India
+        const map = L.map('map').setView([20.5937, 78.9629], 5);
+        
+        // Add tile layer (using OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 8,
+          minZoom: 4
+        }).addTo(map);
+        
+        // Function to get color based on e-waste amount
+        function getColor(d) {
+          return d > 200000 ? '#FE5013' :
+                 d > 150000 ? '#FE8F13' :
+                 d > 100000 ? '#FEC807' :
+                 d > 70000  ? '#FEF041' :
+                 d > 50000  ? '#84D956' :
+                 d > 30000  ? '#30C680' :
+                            '#25B4A7';
+        }
+        
+        // Expanded list of Indian cities with e-waste data
+        const cities = [
+          { name: "Mumbai", lat: 19.0760, lng: 72.8777, waste: 120000 },
+          { name: "Delhi", lat: 28.6139, lng: 77.2090, waste: 78000 },
+          { name: "Bangalore", lat: 12.9716, lng: 77.5946, waste: 68000 },
+          { name: "Chennai", lat: 13.0827, lng: 80.2707, waste: 62000 },
+          { name: "Kolkata", lat: 22.5726, lng: 88.3639, waste: 58000 },
+          { name: "Hyderabad", lat: 17.3850, lng: 78.4867, waste: 52000 },
+          { name: "Pune", lat: 18.5204, lng: 73.8567, waste: 45000 },
+          { name: "Ahmedabad", lat: 23.0225, lng: 72.5714, waste: 42000 },
+          { name: "Jaipur", lat: 26.9124, lng: 75.7873, waste: 28000 },
+          { name: "Lucknow", lat: 26.8467, lng: 80.9462, waste: 25000 },
+          { name: "Kanpur", lat: 26.4499, lng: 80.3319, waste: 22000 },
+          { name: "Nagpur", lat: 21.1458, lng: 79.0882, waste: 21000 },
+          { name: "Indore", lat: 22.7196, lng: 75.8577, waste: 20000 },
+          { name: "Thane", lat: 19.2183, lng: 72.9781, waste: 19000 },
+          { name: "Bhopal", lat: 23.2599, lng: 77.4126, waste: 18000 },
+          { name: "Visakhapatnam", lat: 17.6868, lng: 83.2185, waste: 17000 },
+          { name: "Patna", lat: 25.5941, lng: 85.1376, waste: 16000 },
+          { name: "Vadodara", lat: 22.3072, lng: 73.1812, waste: 15000 },
+          { name: "Ghaziabad", lat: 28.6692, lng: 77.4538, waste: 14000 },
+          { name: "Ludhiana", lat: 30.9010, lng: 75.8573, waste: 13000 },
+          { name: "Agra", lat: 27.1767, lng: 78.0081, waste: 12000 },
+          { name: "Nashik", lat: 20.0112, lng: 73.7902, waste: 11000 },
+          { name: "Faridabad", lat: 28.4089, lng: 77.3178, waste: 10000 },
+          { name: "Meerut", lat: 28.9845, lng: 77.7064, waste: 9500 },
+          { name: "Rajkot", lat: 22.3039, lng: 70.8022, waste: 9000 },
+          { name: "Kalyan-Dombivli", lat: 19.2350, lng: 73.1299, waste: 8500 },
+          { name: "Vasai-Virar", lat: 19.4259, lng: 72.8225, waste: 8000 },
+          { name: "Varanasi", lat: 25.3176, lng: 82.9739, waste: 7500 },
+          { name: "Srinagar", lat: 34.0837, lng: 74.7973, waste: 7000 },
+          { name: "Aurangabad", lat: 19.8762, lng: 75.3433, waste: 6500 }
+        ];
+        
+        // Add markers for cities with e-waste data
+        cities.forEach(city => {
+          const radius = Math.sqrt(city.waste) * 0.8;
+          
+          L.circleMarker([city.lat, city.lng], {
+            color: getColor(city.waste),
+            fillColor: getColor(city.waste),
+            fillOpacity: 0.7,
+            radius: radius / 100
+          }).addTo(map)
+          .bindPopup(`
+            <div style="color: #333;">
+              <h3 style="margin: 0 0 10px; color: #25B4A7;">${city.name}</h3>
+              <p style="margin: 5px 0;"><strong>E-Waste Generated:</strong> ${city.waste.toLocaleString()} tons/year</p>
+              <p style="margin: 5px 0;"><strong>Recycling Rate:</strong> ${Math.floor(Math.random() * 30 + 20)}%</p>
+              <p style="margin: 5px 0;"><strong>Major Facilities:</strong> ${Math.floor(Math.random() * 5 + 2)}</p>
+            </div>
+          `);
+        });
+        
+        // Add some random heat points across India
+        for (let i = 0; i < 50; i++) {
+          const lat = 20.5937 + (Math.random() * 12 - 6);
+          const lng = 78.9629 + (Math.random() * 12 - 6);
+          const wasteAmount = Math.floor(Math.random() * 50000 + 10000);
+          
+          L.circleMarker([lat, lng], {
+            color: getColor(wasteAmount),
+            fillColor: getColor(wasteAmount),
+            fillOpacity: 0.5,
+            radius: 5
+          }).addTo(map)
+          .bindPopup(`Estimated e-waste: ${wasteAmount.toLocaleString()} tons/year`);
+        }
+      }
+
+      // Initialize Enhanced Full-Screen News Carousel
+      function initNewsCarousel() {
+        const newsData = [
+          {
+            title: "New E-Waste Regulations",
+            desc: "Global rules for e-disposal aim to protect the environment in 2025.",
+            image: "https://images.unsplash.com/photo-1618477388957-7a600f3c7c2f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+            link: "https://timesofindia.indiatimes.com/city/kolkata/kolkata-gets-its-first-zero-waste-food-kiosk-in-new-town/articleshow/94026528.cms"
+          },
+          {
+            title: "AI in Recycling",
+            desc: "Artificial intelligence is revolutionizing sorting and processing in recycling facilities.",
+            image: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+            link: "https://www.forbes.com/sites/forbestechcouncil/2023/03/29/the-role-of-ai-in-electronic-waste-management/"
+          },
+          {
+            title: "E-Waste Crisis",
+            desc: "Latest statistics highlight the growing global e-waste problem and its impact.",
+            image: "https://i.pinimg.com/736x/f4/2e/60/f42e605ec51edb50ff029c92591f11e1.jpg",
+            link: "https://www.who.int/news-room/fact-sheets/detail/electronic-waste-(e-waste)"
+          },
+          {
+            title: "India's E-Waste Challenge",
+            desc: "India is the world's third-largest e-waste generator. What can be done about it?",
+            image: "https://i.pinimg.com/1200x/39/0a/2e/390a2e590e84a63529fff688514f6f66.jpg",
+            link: "https://www.iasgyan.in/daily-current-affairs/e-waste-in-india"
+          },
+          {
+            title: "Recycling Innovations",
+            desc: "New technologies are making e-waste recycling more efficient and effective.",
+            image: "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+            link: "https://www.weforum.org/agenda/2023/03/ewaste-electronic-recycling-circular-economy/"
+          },
+          {
+            title: "Urban Mining Potential",
+            desc: "Extracting valuable materials from e-waste could reduce mining needs significantly.",
+            image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+            link: "https://www.sciencedirect.com/science/article/abs/pii/S0956053X20305363"
+          },
+          {
+            title: "Corporate Responsibility",
+            desc: "Tech companies are increasingly taking responsibility for their products' end-of-life.",
+            image: "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+            link: "https://www.greenpeace.org/usa/reports/guide-to-greener-electronics/"
+          }
+        ];
+        
+        const track = document.getElementById('carousel-track');
+        
+        // Create multiple sets of cards for seamless loop
+        const cardSets = 3; // Create 3 complete sets
+        for (let set = 0; set < cardSets; set++) {
+          newsData.forEach((news, i) => {
+            const card = document.createElement('div');
+            card.className = 'news-card';
+            
+            card.innerHTML = `
+              <img src="${news.image}" class="news-card-image" alt="${news.title}">
+              <div class="news-card-content">
+                <h4 class="news-card-title">${news.title}</h4>
+                <p class="news-card-desc">${news.desc}</p>
+                <a href="${news.link}" target="_blank" class="news-card-link">
+                  Read more <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            `;
+            
+            track.appendChild(card);
+            
+            // Add click event to open news in new tab
+            card.addEventListener('click', (e) => {
+              if (!e.target.closest('.news-card-link')) {
+                window.open(news.link, '_blank');
+              }
+            });
+          });
+        }
+      }
+      
+      // Initialize Learning Center
+      function initLearningCenter() {
+        const modal = document.getElementById('detail-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalBody = document.getElementById('modal-body');
+        const closeModal = document.getElementById('close-modal');
+        
+        const categoryData = {
+          mobile: {
+            title: "Mobile Devices",
+            icon: '<i class="fas fa-mobile-alt"></i>',
+            content: `
+              <p>Mobile devices contain valuable materials like gold, silver, and copper, but also hazardous substances like lead and mercury.</p>
+              <h3>Recycling Guidelines:</h3>
+              <ul>
+                <li>Remove all personal data before recycling</li>
+                <li>Remove SIM cards and memory cards</li>
+                <li>Consider donating if the device still works</li>
+                <li>Find certified e-waste recyclers for proper disposal</li>
+              </ul>
+              <h3>What can be recovered:</h3>
+              <ul>
+                <li>Precious metals (gold, silver, palladium)</li>
+                <li>Copper and other metals</li>
+                <li>Glass from screens</li>
+                <li>Plastics from casings</li>
+              </ul>
+            `
+          },
+          computers: {
+            title: "Computers & Laptops",
+            icon: '<i class="fas fa-laptop"></i>',
+            content: `
+              <p>Computers contain numerous valuable components but also hazardous materials that require special handling.</p>
+              <h3>Recycling Guidelines:</h3>
+              <ul>
+                <li>Back up and wipe all data from storage devices</li>
+                <li>Remove batteries for separate recycling</li>
+                <li>Consider upgrading components instead of replacing whole systems</li>
+                <li>Check with manufacturers for take-back programs</li>
+              </ul>
+              <h3>Components to separate:</h3>
+              <ul>
+                <li>Hard drives and SSDs (data security concern)</li>
+                <li>Batteries (especially lithium-ion)</li>
+                <li>Power supplies</li>
+                <li>Circuit boards</li>
+              </ul>
+            `
+          },
+          cables: {
+            title: "Cables & Wires",
+            icon: '<i class="fas fa-plug"></i>',
+            content: `
+              <p>Electronic cables contain valuable copper wiring but are often coated with PVC which requires special processing.</p>
+              <h3>Recycling Guidelines:</h3>
+              <ul>
+                <li>Separate by cable type when possible</li>
+                <li>Remove connectors when feasible</li>
+                <li>Check with local recyclers for acceptance</li>
+                <li>Consider reuse before recycling</li>
+              </ul>
+              <h3>Types of cables:</h3>
+              <ul>
+                <li>Power cords</li>
+                <li>Data cables (USB, HDMI, Ethernet)</li>
+                <li>Audio/video cables</li>
+                <li>Proprietary connectors</li>
+              </ul>
+            `
+          },
+          components: {
+            title: "Electronic Components",
+            icon: '<i class="fas fa-microchip"></i>',
+            content: `
+              <p>Individual electronic components can often be salvaged and reused, reducing the need for new manufacturing.</p>
+              <h3>Recycling Guidelines:</h3>
+              <ul>
+                <li>Test components before discarding</li>
+                <li>Separate by component type</li>
+                <li>Handle circuit boards carefully to avoid damage</li>
+                <li>Find specialized recyclers for certain components</li>
+              </ul>
+              <h3>Common components:</h3>
+              <ul>
+                <li>Circuit boards</li>
+                <li>Processors and memory chips</li>
+                <li>Capacitors and resistors</li>
+                <li>Connectors and sockets</li>
+              </ul>
+            `
+          },
+          graphics: {
+            title: "Graphics Cards",
+            icon: '<i class="fas fa-desktop"></i>',
+            content: `
+              <p>Graphics cards contain valuable materials but also require special handling due to their complexity.</p>
+              <h3>Recycling Guidelines:</h3>
+              <ul>
+                <li>Consider reselling if still functional</li>
+                <li>Remove from computers before recycling</li>
+                <li>Handle carefully to avoid damage to components</li>
+                <li>Check for manufacturer recycling programs</li>
+              </ul>
+              <h3>Valuable materials:</h3>
+              <ul>
+                <li>Gold contacts and connectors</li>
+                <li>Copper heat pipes and heat sinks</li>
+                <li>Rare earth elements in components</li>
+                <li>Aluminum frames and brackets</li>
+              </ul>
+            `
+          },
+          batteries: {
+            title: "Batteries",
+            icon: '<i class="fas fa-battery-full"></i>',
+            content: `
+              <p>Batteries contain hazardous materials and must be recycled properly to prevent environmental contamination.</p>
+              <h3>Recycling Guidelines:</h3>
+              <ul>
+                <li>Never dispose of batteries in regular trash</li>
+                <li> Tape terminals of lithium batteries to prevent fires</li>
+                <li>Find authorized battery recycling drop-off points</li>
+                <li>Store batteries in cool, dry place until recycling</li>
+              </ul>
+              <h3>Battery types:</h3>
+              <ul>
+                <li>Lithium-ion (phones, laptops)</li>
+                <li>Nickel-metal hydride (older electronics)</li>
+                <li>Alkaline (AA, AAA batteries)</li>
+                <li>Button cells (watches, small devices)</li>
+              </ul>
+            `
+          }
+        };
+        
+        // Add click events to category buttons
+        document.querySelectorAll('.waste-category button').forEach(button => {
+          button.addEventListener('click', function() {
+            const category = this.parentElement.getAttribute('data-category');
+            openCategoryModal(category);
+          });
+        });
+        
+        function openCategoryModal(category) {
+          const data = categoryData[category];
+          
+          modalTitle.textContent = data.title;
+          modalIcon.innerHTML = data.icon;
+          modalBody.innerHTML = data.content;
+          
+          modal.style.display = 'flex';
+          setTimeout(() => {
+            modalContent.classList.add('active');
+          }, 10);
+        }
+        
+        closeModal.addEventListener('click', closeModalFunc);
+        
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModalFunc();
+          }
+        });
+        
+        function closeModalFunc() {
+          modalContent.classList.remove('active');
+          setTimeout(() => {
+            modal.style.display = 'none';
+          }, 300);
+        }
+      }
+      
+      // Initialize all components
+      initNewsCarousel();
+      initIndiaMap();
+      initLearningCenter();
+    });
+  </script>
+</body>
+</html>

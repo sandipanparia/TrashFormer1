@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Pickup Requests - Vendor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+      --primary-dark: #1E88E5;
+      --eco-green: #10B981; /* New eco-friendly green color */
+      --eco-green-light: #34D399; /* Lighter green variant */
+      --bg-dark: #020617; /* Even darker, more neutral background */
+      --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+      --card-bg: #0F172A;
+      --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+      --text-primary: #E2E8F0; /* Slightly softer white */
+      --text-secondary: #64748B; /* Softer gray */
+      --radius: 10px; /* Slightly larger radius */
+      --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* Header */
+    header {
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(10deg) scale(1.1);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Navigation */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+        color: var(--text-primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid var(--border-color);
+    }
+
+    .profile-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px var(--primary-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+      flex: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: #F59E0B;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-approved {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10B981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-rejected {
+      background: rgba(239, 68, 68, 0.1);
+      color: #EF4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-completed {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    /* Request Items */
+    .request-item {
+      background: rgba(2, 6, 23, 0.3);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary);
+      transition: var(--transition);
+    }
+
+    .request-item:hover {
+      background: rgba(2, 6, 23, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .request-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .request-info h4 {
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .request-meta {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .request-meta strong {
+      color: var(--text-primary);
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* QR Code */
+    .qr-code {
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .qr-code:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: var(--border-color);
+    }
+
+    .empty-state h3 {
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-dark);
+      color: var(--text-secondary);
+      padding: 3rem 1.5rem 1rem;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+
+    .footer-section h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--eco-green);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p, .footer-section a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--eco-green);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      color: var(--eco-green);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .request-header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .request-actions {
+        flex-direction: column;
+        width: 100%;
+        align-items: flex-start;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+      
+      .user-details {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(56, 189, 248, 0.1);
+        border-radius: 8px;
+        border-left: 4px solid var(--primary);
+        border-top: 1px solid rgba(56, 189, 248, 0.2);
+        border-right: 1px solid rgba(56, 189, 248, 0.2);
+        border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      }
+      
+      .user-details strong {
+        color: var(--primary);
+        font-weight: 600;
+      }
+      
+      .request-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-end;
+        min-width: 150px;
+      }
+      
+      .request-actions .btn {
+        white-space: nowrap;
+        min-width: 140px;
+        text-align: center;
+      }
+      
+      /* Disposition Badge Styles */
+      .disposition-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .disposition-badge.disposition-disposed {
+        background: #dc3545;
+        color: white;
+      }
+      
+      .disposition-badge.disposition-selling {
+        background: #28a745;
+        color: white;
+      }
+      
+      .disposition-badge.disposition-unknown {
+        background: #6c757d;
+        color: white;
+      }
+      
+      /* Enhanced Status Badge Styles */
+      .status-badge.status-DISPOSED {
+        background: #dc3545;
+        color: white;
+      }
+      
+      .status-badge.status-COLLECTED {
+        background: #17a2b8;
+        color: white;
+      }
+      
+      .status-badge.status-IN_STORAGE {
+        background: #6f42c1;
+        color: white;
+      }
+      
+      .status-badge.status-SENT_TO_VENDOR {
+        background: #fd7e14;
+        color: white;
+      }
+      
+      .status-badge.status-RECYCLED {
+        background: #20c997;
+        color: white;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/auth/dashboard/vendor_dashboard" class="nav-link">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="/pickup/vendor/items" class="nav-link">
+          <i class="fas fa-laptop"></i> Available Items
+        </a>
+        <a href="/pickup/vendor/requests" class="nav-link active">
+          <i class="fas fa-list"></i> My Requests
+        </a>
+        <a href="/auth/profile" class="nav-link">
+          <i class="fas fa-user"></i> Profile
+        </a>
+      </nav>
+      
+      <div class="user-actions">
+        {% if current_user %}
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          {{ (current_user.full_name or current_user.username)[:1] | upper }}
+        </a>
+        <a href="/auth/logout" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+        {% else %}
+        <a href="/auth/login" class="btn btn-secondary">Sign In</a>
+        <a href="/auth/signup" class="btn btn-primary">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">Available Items for Pickup</h1>
+        <p class="page-subtitle">User-approved items available for collection</p>
+      </div>
+      
+      {% if pickup_requests %}
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Available Items for Collection</h2>
+          </div>
+          
+          {% for item in pickup_requests %}
+              <div class="request-item">
+                <div class="request-header">
+                  <div class="request-info">
+                  <h4>{{ item.item_name }}</h4>
+                    <div class="request-meta">
+                    <strong>Item ID:</strong> {{ item.id[:8] if item.id and item.id|string else 'N/A' }}<br>
+                    <strong>Category:</strong> {{ item.category_name or 'N/A' }}<br>
+                    <strong>Department:</strong> {{ item.department_name or 'N/A' }}<br>
+                    <strong>Status:</strong> 
+                    <span class="status-badge status-{{ item.status|lower }}">
+                      {% if item.status == 'REPORTED' %}
+                        <i class="fas fa-flag"></i> Reported
+                      {% elif item.status == 'COLLECTED' %}
+                        <i class="fas fa-box"></i> Collected
+                      {% elif item.status == 'IN_STORAGE' %}
+                        <i class="fas fa-warehouse"></i> In Storage
+                      {% else %}
+                        <i class="fas fa-info-circle"></i> {{ item.status|title }}
+                      {% endif %}
+                    </span><br>
+                    
+                    <!-- User Details Section -->
+                    <div class="user-details" style="margin-top: 10px; padding: 10px; background: rgba(56, 189, 248, 0.1); border-radius: 5px; border-left: 3px solid var(--primary);">
+                      <strong style="color: var(--primary);">User Details:</strong><br>
+                      <strong>Name:</strong> {{ item.user_name or 'N/A' }}<br>
+                      <strong>Email:</strong> {{ item.user_email or 'N/A' }}<br>
+                      <strong>Phone:</strong> {{ item.user_phone or 'N/A' }}<br>
+                    </div>
+                    
+                    {% if item.price %}
+                      <strong>Price:</strong> Rs {{ "%.2f"|format(item.price) }}<br>
+                    {% endif %}
+                    {% if item.weight_kg %}
+                      <strong>Weight:</strong> {{ item.weight_kg }} kg<br>
+                    {% endif %}
+                    {% if item.serial_number %}
+                      <strong>Serial Number:</strong> {{ item.serial_number }}<br>
+                    {% endif %}
+                    {% if item.notes %}
+                      <strong>Item Notes:</strong> {{ item.notes[:100] }}{% if item.notes|length > 100 %}...{% endif %}<br>
+                    {% endif %}
+                    
+                    {% if item.disposition_type %}
+                      <strong>Disposition Type:</strong> 
+                      <span class="disposition-badge disposition-{{ item.disposition_type }}">
+                        {% if item.disposition_type == 'disposed' %}
+                          <i class="fas fa-trash"></i> Disposed
+                        {% elif item.disposition_type == 'selling' %}
+                          <i class="fas fa-tag"></i> Selling
+                        {% else %}
+                          <i class="fas fa-question"></i> {{ item.disposition_type|title }}
+                        {% endif %}
+                      </span><br>
+                    {% endif %}
+                    
+                    {% if item.reported_date %}
+                      <strong>Reported Date:</strong> {{ item.reported_date.strftime('%Y-%m-%d %H:%M') if item.reported_date else 'N/A' }}<br>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="request-actions">
+                  <a href="/pickup/request/{{ item.id }}" class="btn btn-primary">
+                    <i class="fas fa-handshake"></i> Request Pickup
+                  </a>
+                  </div>
+                </div>
+              </div>
+          {% endfor %}
+        </div>
+        
+      {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No Available Items</h3>
+            <p>There are currently no items available for pickup. Check back later for new items.</p>
+            <a href="/pickup/vendor/items" class="btn btn-primary" style="margin-top: 1rem;">
+              <i class="fas fa-search"></i>
+              Browse All Items
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/items/"><i class="fas fa-laptop"></i> I</li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Haldia, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+  </script>
+</body>
+</html>
+                      {% endif %}
+                      {% elif request.status == 'completed' %}
+                        <strong>Completed:</strong> {{ request.completed_at.strftime('%Y-%m-%d %H:%M') if request.completed_at else 'N/A' }}<br>
+                      {% elif request.status == 'DISPOSED' %}
+                        <strong>Disposed:</strong> {{ request.disposed_at.strftime('%Y-%m-%d %H:%M') if request.disposed_at else 'N/A' }}<br>
+                        <strong>Disposal Method:</strong> {{ request.disposal_method or 'Standard Disposal' }}<br>
+                      {% elif request.status == 'COLLECTED' %}
+                        <strong>Collected:</strong> {{ request.collected_at.strftime('%Y-%m-%d %H:%M') if request.collected_at else 'N/A' }}<br>
+                        <strong>Collection Location:</strong> {{ request.collection_location or 'N/A' }}<br>
+                      {% elif request.status == 'IN_STORAGE' %}
+                        <strong>Stored:</strong> {{ request.stored_at.strftime('%Y-%m-%d %H:%M') if request.stored_at else 'N/A' }}<br>
+                        <strong>Storage Location:</strong> {{ request.storage_location or 'N/A' }}<br>
+                      {% elif request.status == 'SENT_TO_VENDOR' %}
+                        <strong>Sent to Vendor:</strong> {{ request.sent_at.strftime('%Y-%m-%d %H:%M') if request.sent_at else 'N/A' }}<br>
+                        <strong>Vendor Notes:</strong> {{ request.vendor_notes or 'N/A' }}<br>
+                      {% elif request.status == 'RECYCLED' %}
+                        <strong>Recycled:</strong> {{ request.recycled_at.strftime('%Y-%m-%d %H:%M') if request.recycled_at else 'N/A' }}<br>
+                        <strong>Recycling Method:</strong> {{ request.recycling_method or 'Standard Recycling' }}<br>
+                      {% endif %}
+                      
+                      {% if request.vendor_notes %}
+                        <strong>Your Notes:</strong> {{ request.vendor_notes }}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+                      {% endif %}
+          {% endfor %}
+                    </div>
+      {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No Pickup Requests</h3>
+            <p>You haven't made any pickup requests yet. Browse available items to request pickups.</p>
+            <a href="/pickup/vendor/items" class="btn btn-primary" style="margin-top: 1rem;">
+              <i class="fas fa-search"></i>
+              Browse Available Items
+            </a>
+                </div>
+              </div>
+            {% endif %}
+        </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+          </div>
+          
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/items/"><i class="fas fa-laptop"></i> I</li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Haldia, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+  </script>
+</body>
+</html>
+                        {% endif %}
+                      {% elif request.status == 'completed' %}
+                        <strong>Completed:</strong> {{ request.completed_at.strftime('%Y-%m-%d %H:%M') if request.completed_at else 'N/A' }}<br>
+                      {% elif request.status == 'DISPOSED' %}
+                        <strong>Disposed:</strong> {{ request.disposed_at.strftime('%Y-%m-%d %H:%M') if request.disposed_at else 'N/A' }}<br>
+                        <strong>Disposal Method:</strong> {{ request.disposal_method or 'Standard Disposal' }}<br>
+                      {% elif request.status == 'COLLECTED' %}
+                        <strong>Collected:</strong> {{ request.collected_at.strftime('%Y-%m-%d %H:%M') if request.collected_at else 'N/A' }}<br>
+                        <strong>Collection Location:</strong> {{ request.collection_location or 'N/A' }}<br>
+                      {% elif request.status == 'IN_STORAGE' %}
+                        <strong>Stored:</strong> {{ request.stored_at.strftime('%Y-%m-%d %H:%M') if request.stored_at else 'N/A' }}<br>
+                        <strong>Storage Location:</strong> {{ request.storage_location or 'N/A' }}<br>
+                      {% elif request.status == 'SENT_TO_VENDOR' %}
+                        <strong>Sent to Vendor:</strong> {{ request.sent_at.strftime('%Y-%m-%d %H:%M') if request.sent_at else 'N/A' }}<br>
+                        <strong>Vendor Notes:</strong> {{ request.vendor_notes or 'N/A' }}<br>
+                      {% elif request.status == 'RECYCLED' %}
+                        <strong>Recycled:</strong> {{ request.recycled_at.strftime('%Y-%m-%d %H:%M') if request.recycled_at else 'N/A' }}<br>
+                        <strong>Recycling Method:</strong> {{ request.recycling_method or 'Standard Recycling' }}<br>
+                      {% endif %}
+                      
+                      {% if request.vendor_notes %}
+                        <strong>Your Notes:</strong> {{ request.vendor_notes }}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No Pickup Requests</h3>
+            <p>You haven't made any pickup requests yet. Browse available items to request pickups.</p>
+            <a href="/pickup/vendor/items" class="btn btn-primary" style="margin-top: 1rem;">
+              <i class="fas fa-search"></i>
+              Browse Available Items
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/items/"><i class="fas fa-laptop"></i> I</li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Haldia, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Pickup Requests - Vendor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #38BDF8; /* Lighter, more vibrant accent blue */
+      --primary-dark: #1E88E5;
+      --eco-green: #10B981; /* New eco-friendly green color */
+      --eco-green-light: #34D399; /* Lighter green variant */
+      --bg-dark: #020617; /* Even darker, more neutral background */
+      --bg-light: #0F172A; /* The old dark bg becomes the new light bg */
+      --card-bg: #0F172A;
+      --border-color: rgba(56, 189, 248, 0.2); /* Border color matches new primary */
+      --text-primary: #E2E8F0; /* Slightly softer white */
+      --text-secondary: #64748B; /* Softer gray */
+      --radius: 10px; /* Slightly larger radius */
+      --transition: all 0.3s ease-in-out; /* A bit smoother transition */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* Header */
+    header {
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      color: var(--bg-dark);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--eco-green) 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(10deg) scale(1.1);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Navigation */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--eco-green) 100%);
+        color: var(--text-primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 2px solid var(--border-color);
+    }
+
+    .profile-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px var(--primary-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-image: linear-gradient(to right, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    /* Main Content */
+    main {
+      padding: 2.5rem 0;
+      flex: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: var(--primary);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: #F59E0B;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-approved {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10B981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-rejected {
+      background: rgba(239, 68, 68, 0.1);
+      color: #EF4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-completed {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    /* Request Items */
+    .request-item {
+      background: rgba(2, 6, 23, 0.3);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary);
+      transition: var(--transition);
+    }
+
+    .request-item:hover {
+      background: rgba(2, 6, 23, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .request-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .request-info h4 {
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .request-meta {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .request-meta strong {
+      color: var(--text-primary);
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* QR Code */
+    .qr-code {
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .qr-code:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: var(--border-color);
+    }
+
+    .empty-state h3 {
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-dark);
+      color: var(--text-secondary);
+      padding: 3rem 1.5rem 1rem;
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+    }
+
+    .footer-section h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--eco-green);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p, .footer-section a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--eco-green);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      color: var(--eco-green);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .request-header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .request-actions {
+        flex-direction: column;
+        width: 100%;
+        align-items: flex-start;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-recycle"></i>
+        </div>
+        <span>TrashFormer</span>
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/auth/dashboard/vendor_dashboard" class="nav-link">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="/pickup/vendor/items" class="nav-link">
+          <i class="fas fa-laptop"></i> Available Items
+        </a>
+        <a href="/pickup/vendor/requests" class="nav-link active">
+          <i class="fas fa-list"></i> My Requests
+        </a>
+        <a href="/auth/profile" class="nav-link">
+          <i class="fas fa-user"></i> Profile
+        </a>
+      </nav>
+      
+      <div class="user-actions">
+        {% if current_user %}
+        <a href="/auth/profile" title="Profile" class="profile-icon">
+          {{ (current_user.full_name or current_user.username)[:1] | upper }}
+        </a>
+        <a href="/auth/logout" class="btn btn-primary">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+        {% else %}
+        <a href="/auth/login" class="btn btn-secondary">Sign In</a>
+        <a href="/auth/signup" class="btn btn-primary">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">My Pickup Requests</h1>
+        <p class="page-subtitle">Track the status of your pickup requests</p>
+      </div>
+      
+      {% if pickup_requests %}
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Pending Requests</h2>
+          </div>
+          
+          {% for request in pickup_requests %}
+            {% if request.status == 'pending' %}
+              <div class="request-item">
+                <div class="request-header">
+                  <div class="request-info">
+                    <h4>{{ request.item_name }}</h4>
+                    <div class="request-meta">
+                      <strong>Item ID:</strong> {{ request.item_id[:8] if request.item_id else 'N/A' }}<br>
+                      <strong>Requested:</strong> {{ request.requested_at.strftime('%Y-%m-%d %H:%M') if request.requested_at else 'N/A' }}<br>
+                      {% if request.item and request.item.price %}
+                        <strong>Price:</strong> Rs {{ "%.2f"|format(request.item.price) }}<br>
+                      {% endif %}
+                      {% if request.vendor_notes %}
+                        <strong>Your Notes:</strong> {{ request.vendor_notes }}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="request-actions">
+                    <span class="status-badge status-pending">
+                      <i class="fas fa-clock"></i>
+                      Pending
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Approved Requests</h2>
+          </div>
+          
+          {% for request in pickup_requests %}
+            {% if request.status == 'approved' %}
+              <div class="request-item">
+                <div class="request-header">
+                  <div class="request-info">
+                    <h4>{{ request.item_name }}</h4>
+                    <div class="request-meta">
+                      <strong>Item ID:</strong> {{ request.item_id[:8] if request.item_id else 'N/A' }}<br>
+                      <strong>Approved:</strong> {{ request.approved_at.strftime('%Y-%m-%d %H:%M') if request.approved_at else 'N/A' }}<br>
+                      {% if request.item and request.item.price %}
+                        <strong>Price:</strong> Rs {{ "%.2f"|format(request.item.price) }}<br>
+                      {% endif %}
+                      {% if request.pickup_location %}
+                        <strong>Pickup Location:</strong> {{ request.pickup_location }}<br>
+                      {% endif %}
+                      {% if request.user_notes %}
+                        <strong>User Notes:</strong> {{ request.user_notes }}<br>
+                      {% endif %}
+                      {% if request.vendor_notes %}
+                        <strong>Your Notes:</strong> {{ request.vendor_notes }}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="request-actions">
+                    <span class="status-badge status-approved">
+                      <i class="fas fa-check"></i>
+                      Approved
+                    </span>
+                    <!-- Show QR only for approved items -->
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                      {% if request.item and request.item.id %}
+                        <img src="/items/{{ request.item.id }}/qr.png" alt="QR" width="72" height="72" class="qr-code" />
+                      {% elif request.item_id %}
+                        <img src="/items/{{ request.item_id }}/qr.png" alt="QR" width="72" height="72" class="qr-code" />
+                      {% endif %}
+                    </div>
+                    <a href="/pickup/item/{{ request.item_id }}/details" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View Details
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Other Requests</h2>
+          </div>
+          
+          {% for request in pickup_requests %}
+            {% if request.status not in ['pending', 'approved'] %}
+              <div class="request-item">
+                <div class="request-header">
+                  <div class="request-info">
+                    <h4>{{ request.item_name }}</h4>
+                    <div class="request-meta">
+                      <strong>Item ID:</strong> {{ request.item_id[:8] if request.item_id else 'N/A' }}<br>
+                      <strong>Status:</strong> 
+                      <span class="status-badge status-{{ request.status }}">
+                        {% if request.status == 'rejected' %}
+                          <i class="fas fa-times"></i>
+                        {% elif request.status == 'completed' %}
+                          <i class="fas fa-flag-checkered"></i>
+                        {% endif %}
+                        {{ request.status|title }}
+                      </span><br>
+                      <strong>Requested:</strong> {{ request.requested_at.strftime('%Y-%m-%d %H:%M') if request.requested_at else 'N/A' }}<br>
+                      {% if request.item and request.item.price %}
+                        <strong>Price:</strong> Rs {{ "%.2f"|format(request.item.price) }}<br>
+                      {% endif %}
+                      {% if request.status == 'rejected' %}
+                        <strong>Rejected:</strong> {{ request.rejected_at.strftime('%Y-%m-%d %H:%M') if request.rejected_at else 'N/A' }}<br>
+                        {% if request.user_notes %}
+                          <strong>Reason:</strong> {{ request.user_notes }}<br>
+                        {% endif %}
+                      {% elif request.status == 'completed' %}
+                        <strong>Completed:</strong> {{ request.completed_at.strftime('%Y-%m-%d %H:%M') if request.completed_at else 'N/A' }}<br>
+                      {% endif %}
+                      {% if request.vendor_notes %}
+                        <strong>Your Notes:</strong> {{ request.vendor_notes }}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No Pickup Requests</h3>
+            <p>You haven't made any pickup requests yet. Browse available items to request pickups.</p>
+            <a href="/pickup/vendor/items" class="btn btn-primary" style="margin-top: 1rem;">
+              <i class="fas fa-search"></i>
+              Browse Available Items
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>TrashFormer</h3>
+          <p>We're committed to sustainable e-waste management through technology and innovation.</p>
+          <div class="social-links">
+            <a href="https://www.twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/items/"><i class="fas fa-laptop"></i> I</li>
+            <li><a href="/schedules/"><i class="fas fa-calendar-alt"></i> Schedules</a></li>
+            <li><a href="/vendors/"><i class="fas fa-store"></i> Vendors</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links" style="list-style: none;">
+            <li><i class="fas fa-map-marker-alt"></i> HIT Campus, Haldia, Kolkata, WB, India</li>
+            <li><i class="fas fa-phone"></i> <a href="tel:+918420280792">+91 8420280792</a></li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:aunkurkumarsaha@gmail.com">aunkurkumarsaha@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 TrashFormer. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Enhanced particle animation with green particles
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+
+        // Particle colors including green
+        const colors = [
+          'rgba(56, 189, 248, 0.5)', // blue
+          'rgba(16, 185, 129, 0.5)', // green
+          'rgba(96, 165, 250, 0.5)', // light blue
+          'rgba(52, 211, 153, 0.5)'  // light green
+        ];
+
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            
+            if (this.x > canvas.width || this.x < 0) {
+              this.speedX = -this.speedX;
+            }
+            if (this.y > canvas.height || this.y < 0) {
+              this.speedY = -this.speedY;
+            }
+          }
+          
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+
+        function init() {
+          particlesArray = [];
+          const numberOfParticles = (canvas.height * canvas.width) / 9000;
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+          }
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+            
+            // Connect particles with lines
+            for (let j = i; j < particlesArray.length; j++) {
+              const dx = particlesArray[i].x - particlesArray[j].x;
+              const dy = particlesArray[i].y - particlesArray[j].y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    });
+  </script>
+</body>
+</html>
